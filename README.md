@@ -1,1 +1,5 @@
-# alarmRecord
+# EPICS alarmRecord
+
+The Alarm record is used to provide contextual text description of the most significant alarm from up to 10 other linked records. The alarm mechanism is similar to other records with multiple inputs, except that it silently enforces Channel Access status and severity for all linked records. Whenever the record processes, it scans all linked records for alarms. Debounce mechanism ensures minimal time before a given linked record's alarm becomes effective. Only effective alarms propagate to the record status and VAL field. When more than one linked records is in effective alarm state, text&severity&status from the first record in the list becomes active.
+
+Several fields are available to customize linked alarm behavior. ENx fields enable or disable the link. DLYx fields provide debounce mechanism for intermittent alarms. STRx fields allow to customize message that propagates in case the linked record is in alarm. SEVx allows to override the severity from the linked record.

@@ -1,0 +1,135 @@
+#*************************************************************************
+# Copyright (c) 2007 UChicago Argonne LLC, as Operator of Argonne
+#     National Laboratory.
+# Copyright (c) 2002 The Regents of the University of California, as
+#     Operator of Los Alamos National Laboratory.
+# EPICS BASE is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution. 
+#*************************************************************************
+recordtype(alarm) {
+	include "dbCommon.dbd" 
+    field(RCTX,DBF_NOACCESS) {
+        prompt("Record Private")
+        special(SPC_NOMOD)
+        interest(4)
+        extra("struct alarmRecordCtx *rctx")
+    }
+    field(VAL,DBF_STRING) {
+        prompt("Current Value")
+        promptgroup(GUI_INPUTS)
+        asl(ASL0)
+        pp(TRUE)
+        size(100)
+    }
+	field(INP1,DBF_INLINK) {
+		prompt("Input 1")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP2,DBF_INLINK) {
+		prompt("Input 2")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP3,DBF_INLINK) {
+		prompt("Input 3")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+    field(STR1,DBF_STRING) {
+        prompt("String 1")
+        promptgroup(GUI_OUTPUT)
+        asl(ASL0)
+        initial("%s")
+        pp(TRUE)
+        size(100)
+    }
+    field(STR2,DBF_STRING) {
+        prompt("String 2")
+        promptgroup(GUI_OUTPUT)
+        asl(ASL0)
+        initial("%s")
+        pp(TRUE)
+        size(100)
+    }
+    field(STR3,DBF_STRING) {
+        prompt("String 3")
+        promptgroup(GUI_OUTPUT)
+        asl(ASL0)
+        initial("%s")
+        pp(TRUE)
+        size(100)
+    }
+	field(SEV1,DBF_MENU) {
+		prompt("Severity 1")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV2,DBF_MENU) {
+		prompt("Severity 2")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV3,DBF_MENU) {
+		prompt("Severity 3")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(EN1,DBF_MENU) {
+		prompt("Enable link 1")
+        promptgroup(GUI_INPUTS)
+		pp(TRUE)
+        initial("1")
+		menu(menuYesNo)
+	}
+	field(EN2,DBF_MENU) {
+		prompt("Enable link 2")
+        promptgroup(GUI_INPUTS)
+		pp(TRUE)
+        initial("1")
+		menu(menuYesNo)
+	}
+	field(EN3,DBF_MENU) {
+		prompt("Enable link 3")
+        promptgroup(GUI_INPUTS)
+		pp(TRUE)
+        initial("1")
+		menu(menuYesNo)
+	}
+	field(DLY1,DBF_DOUBLE) {
+		prompt("Debounce delay 1")
+		pp(TRUE)
+	}
+	field(DLY2,DBF_DOUBLE) {
+		prompt("Debounce delay 2")
+		pp(TRUE)
+	}
+	field(DLY3,DBF_DOUBLE) {
+		prompt("Debounce delay 3")
+		pp(TRUE)
+	}
+	field(DUR1,DBF_DOUBLE) {
+		prompt("Duration 1")
+		pp(TRUE)
+        initial("-1")
+	}
+	field(DUR2,DBF_DOUBLE) {
+		prompt("Duration 2")
+		pp(TRUE)
+        initial("-1")
+	}
+	field(DUR3,DBF_DOUBLE) {
+		prompt("Duration 3")
+		pp(TRUE)
+        initial("-1")
+	}
+	%/* Number of INPx fields defined */
+	%#define ALARM_NLINKS 3
+	%#define ALARM_STR_LEN 100
+}

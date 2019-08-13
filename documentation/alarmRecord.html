@@ -1,0 +1,945 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>Alarm Record</title>
+</head>
+
+<body>
+
+<h1 align="center">Alarm Record</h1>
+
+<h2 align="center">Author: Klemen Vodopivec</h2>
+
+<h2>Contents</h2>
+
+<ul>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#Scan Parameters">Scan Parameters</a></li>
+    <li><a href="#Input Link Parameters">Input Link Parameters</a></li>
+    <li><a href="#Input Link Enable Parameters">Input Link Enable Parameters</a></li>
+    <li><a href="#Alarm Duration Parameters">Alarm Duration Parameters</a></li>
+    <li><a href="#Alarm Debounce Parameters">Alarm Debounce Parameters</a></li>
+    <li><a href="#Alarm Text Parameters">Alarm Text Parameters</a></li>
+    <li><a href="#Alarm Severity Override Parameters">Alarm Severity Override Parameters</a></li>
+    <li><a href="#Output Parameters">Problems with the Standard EPICS PID Record</a></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Introduction">Introduction</a></h2>
+
+<hr>
+
+<p>The Alarm record is used to provide contextual text description
+of the most significant alarm from up to 10 other linked records.
+The alarm mechanism is similar to other records with multiple inputs,
+except that it silently enforces Channel Access status and severity for all
+linked records. Whenever the record processes, it scans all
+linked records for alarms. Debounce mechanism ensures minimal
+time before a given linked record's alarm becomes effective. Only effective
+alarms propagate to the record status and VAL field. When more than
+one linked records is in effective alarm state, text&severity&status
+from the first record in the list becomes active.</p>
+
+<p>Several fields are available to customize linked alarm behavior.
+ENx fields enable or disable the link. DLYx fields provide debounce
+mechanism for intermittent alarms. STRx fields allow to customize
+message that propagates in case the linked record is in alarm.
+SEVx allows to override the severity from the linked record.</p>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Scan Parameters">Scan Parameters</a></h2>
+
+<hr>
+
+<p>The Alarm record has the standard fields (SCAN, etc.) for 
+specifying under what circumstances it will processed. There is no
+device support associated to the record and I/O Intr is not
+supported. Record processing will occur either when SCAN
+is set for periodic processing, when triggered externally or
+through Channel Access specification of individual links.</p>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Input Link Parameters">Input Link Parameters</a></h2>
+
+<hr>
+
+<p>There are 10 input links INP1,INP2,...INP10. The fields can
+be database links or Channel Access links only.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>INP1</td>
+        <td>Database or Channel Access link 1</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP2</td>
+        <td>Database or Channel Access link 2</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP3</td>
+        <td>Database or Channel Access link 3</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP4</td>
+        <td>Database or Channel Access link 4</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP5</td>
+        <td>Database or Channel Access link 5</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP6</td>
+        <td>Database or Channel Access link 6</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP7</td>
+        <td>Database or Channel Access link 7</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP8</td>
+        <td>Database or Channel Access link 8</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP9</td>
+        <td>Database or Channel Access link 9</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>INP10</td>
+        <td>Database or Channel Access link 10</td>
+        <td>INLINK</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Input Link Enable Parameters">Input Link Enable Parameters</a></h2>
+
+<hr>
+
+<p>Input links can be enabled or disabled. When disabled,
+input link can still trigger processing of the record but 
+it will not be considered.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>EN1</td>
+        <td>Link 1 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN2</td>
+        <td>Link 2 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN3</td>
+        <td>Link 3 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN4</td>
+        <td>Link 4 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN5</td>
+        <td>Link 5 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN6</td>
+        <td>Link 6 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN7</td>
+        <td>Link 7 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN8</td>
+        <td>Link 8 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN9</td>
+        <td>Link 9 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>EN10</td>
+        <td>Link 10 enable flag</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>YES</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Alarm Duration Parameters">Alarm Duration Parameters</a></h2>
+
+<hr>
+
+<p>Record keeps track of how long a particular link has been
+in alarmed state. The time in seconds is recorded in DURx fields.
+Value of -1 means link is not in alarm state.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>DUR1</td>
+        <td>Duration of link 1 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR2</td>
+        <td>Duration of link 2 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR3</td>
+        <td>Duration of link 3 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR4</td>
+        <td>Duration of link 4 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR5</td>
+        <td>Duration of link 5 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR6</td>
+        <td>Duration of link 6 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR7</td>
+        <td>Duration of link 7 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR8</td>
+        <td>Duration of link 8 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR9</td>
+        <td>Duration of link 9 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DUR10</td>
+        <td>Duration of link 10 alarm in seconds</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>-1</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Alarm Debounce Parameters">Alarm Debounce Parameters</a></h2>
+
+<hr>
+
+<p>Link's alarm only propagates to parent record when it has
+been present for more than configured delay. The DLYx fields
+describe how long in seconds the alarm has to be present before
+it becomes effective and potentially changes the parent record's
+status, severity and value. Value of 0 means become effective
+immediately.</p>
+
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>DLY1</td>
+        <td>Delay in seconds before link 1 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY2</td>
+        <td>Delay in seconds before link 2 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY3</td>
+        <td>Delay in seconds before link 3 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY4</td>
+        <td>Delay in seconds before link 4 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY5</td>
+        <td>Delay in seconds before link 5 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY6</td>
+        <td>Delay in seconds before link 6 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY7</td>
+        <td>Delay in seconds before link 7 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY8</td>
+        <td>Delay in seconds before link 8 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY9</td>
+        <td>Delay in seconds before link 9 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>DLY10</td>
+        <td>Delay in seconds before link 10 alarm becoming effective</td>
+        <td>DOUBLE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Alarm Text Parameters">Alarm Text Parameters</a></h2>
+
+<hr>
+
+<p>When a link alarm becomes effective, it may change the
+parent record's VAL field. STRx fields can be used to specify
+the string to be used in VAL field. %s identifier can be used
+to include linked record's in place. Empty string has the same
+effect as "%s". Strings are limited to 100 characters.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>STR1</td>
+        <td>String representing this link 1 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR2</td>
+        <td>String representing this link 2 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR3</td>
+        <td>String representing this link 3 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR4</td>
+        <td>String representing this link 4 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR5</td>
+        <td>String representing this link 5 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR6</td>
+        <td>String representing this link 6 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR7</td>
+        <td>String representing this link 7 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR8</td>
+        <td>String representing this link 8 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR9</td>
+        <td>String representing this link 9 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STR10</td>
+        <td>String representing this link 10 alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td>%s</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Alarm Severity Override Parameters">Alarm Severity Override Parameters</a></h2>
+
+<hr>
+
+<p>When a link alarm becomes effective, it may change the
+parent record's SEV and STAT fields. SEVx fields can be used to override
+the severity from linked record.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>SEV1</td>
+        <td>Severity to override one from link 1 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV2</td>
+        <td>Severity to override one from link 2 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV3</td>
+        <td>Severity to override one from link 3 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV4</td>
+        <td>Severity to override one from link 4 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV5</td>
+        <td>Severity to override one from link 5 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV6</td>
+        <td>Severity to override one from link 6 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV7</td>
+        <td>Severity to override one from link 7 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV8</td>
+        <td>Severity to override one from link 8 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV9</td>
+        <td>Severity to override one from link 9 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV10</td>
+        <td>Severity to override one from link 10 record</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>NONE</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+
+</table>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a name="Output Parameters">Output Parameters</a></h2>
+
+<p>When no input links are in alarmed state, the VAL field
+is empty, SEV is set to None and STAT is set to NO_ALARM.</p>
+
+<p>When record is processed and detects any link's alarm to go
+off, it will start time counter for that link. When counter reaches
+the specified debounce delay, that link becomes an effective alarm.
+A single effective alarm will drive parent record's VAL, SEV and STAT
+fields. In case of more than one effective alarms, the one with
+lowest number is selected.</p>
+
+<table border="1">
+    <tr>
+        <th>Field</th>
+        <th>Summary</th>
+        <th>Type</th>
+        <th>DCT</th>
+        <th>Initial</th>
+        <th>Access</th>
+        <th>Modify</th>
+        <th>Rec Proc Monitor</th>
+        <th>PP</th>
+    </tr>
+    <tr>
+        <td>VAL</td>
+        <td>String representing currently effective alarm</td>
+        <td>STRING [100]</td>
+        <td>Yes</td>
+        <td></td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>SEV</td>
+        <td>Severity from currently effective alarm</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+    <tr>
+        <td>STAT</td>
+        <td>Status from currently effective alarm</td>
+        <td>GBLCHOICE</td>
+        <td>Yes</td>
+        <td>0</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>N/A</td>
+        <td>No</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:klemen@vodopivec.org">Klemen Vodopivec</a>:
+    (klemen@vodopivec.org) <br>
+    Last modified: August 12, 2019
+</address>
+</body>
+</html>
