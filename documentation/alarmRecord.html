@@ -935,6 +935,32 @@ lowest number is selected.</p>
 
 <p>&nbsp;</p>
 
+<h2 align="center"><a name="Example Database">Example Database</a></h2>
+
+<hr>
+
+<pre>
+record(longin, "Input1") {
+    field(HIGH, "10")
+    field(HSV,  "MAJOR")
+}
+record(longin, "Input2") {
+    field(LOW,  "-1")
+    field(LSV,  "MINOR")
+}
+record(alarm, "Alarm") {
+    field(INP1, "Input1 CP")
+    field(STR1, "Input 1 in alarm") # This string is used as-is when Input1 is in alarm for 5s or more
+    field(DLY1, "5.0")              # Debounce time set to 5 seconds
+
+    field(INP2, "Input2 CP")
+    field(STR2, "Link 2: %s")       # %s will get replaced with string representation of Input2 value
+    field(SEV2, "MAJOR")            # Override Input2.SEVR with MAJOR
+
+    field(SCAN, "1 second")         # Allows debounce delays to work
+}
+</pre>
+
 <address>
     Suggestions and Comments to: <br>
     <a href="mailto:klemen@vodopivec.org">Klemen Vodopivec</a>:
