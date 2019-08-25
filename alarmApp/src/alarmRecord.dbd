@@ -8,12 +8,6 @@
 #*************************************************************************
 recordtype(alarm) {
 	include "dbCommon.dbd" 
-	field(RCTX,DBF_NOACCESS) {
-		prompt("Record Private")
-		special(SPC_NOMOD)
-		interest(4)
-		extra("struct alarmRecordCtx *rctx")
-	}
 	field(VAL,DBF_STRING) {
 		prompt("Current Value")
 		promptgroup(GUI_INPUTS)

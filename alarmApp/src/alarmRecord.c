@@ -71,10 +71,6 @@ rset alarmRSET={
 };
 epicsExportAddress(rset, alarmRSET);
 
-struct alarmRecordCtx {
-    long alarmed;
-};
-
 static long init_record(dbCommon *pcommon, int pass)
 {
     struct alarmRecord *prec = (struct alarmRecord *)pcommon;
@@ -82,18 +78,15 @@ static long init_record(dbCommon *pcommon, int pass)
     char value[ALARM_STR_LEN];
     int i;
 
-    if (pass == 0) {
-        prec->rctx = (struct alarmRecordCtx *) callocMustSucceed(1, sizeof(struct alarmRecordCtx), "alarmRecord");
-        return 0;
-    }
-
-    plink = &prec->inp1;
-    for (i = 0; i < ALARM_NLINKS; i++, plink++) {
-        if (dbLinkIsConstant(plink)) {
-            recGblRecordError(S_dev_badInpType, (void *)prec, "alarm:init_record");
-            return S_dev_badInpType;
+    if (pass == 1) {
+        plink = &prec->inp1;
+        for (i = 0; i < ALARM_NLINKS; i++, plink++) {
+            if (dbLinkIsConstant(plink)) {
+                recGblRecordError(S_dev_badInpType, (void *)prec, "alarm:init_record");
+                return S_dev_badInpType;
+            }
+            recGblInitConstantLink(plink, DBF_STRING, value);
         }
-        recGblInitConstantLink(plink, DBF_STRING, value);
     }
     return 0;
 }
@@ -107,16 +100,15 @@ static long process(dbCommon *pcommon)
     epicsEnum16 *psevr;
     double *pdur;
     double *pdly;
-    long *pcnt;
-    long *pmdc;
+    epicsInt32 *pcnt;
+    epicsInt32 *pmdc;
     int i;
-    int first;
     epicsTimeStamp timeLast;
     double timeDiff;
-    long alarmed = 0;
     epicsEnum16 sevr = epicsSevNone;
     epicsEnum16 stat = epicsAlarmNone;
     char val[ALARM_STR_LEN] = "";
+    double mindur = 0.0;
 
     prec->pact = TRUE;
     timeLast = prec->time;
@@ -134,7 +126,6 @@ static long process(dbCommon *pcommon)
     pdly = &prec->dly1;
     pcnt = &prec->cnt1;
     pmdc = &prec->mdc1;
-    first = 1;
     for(i = 0; i < ALARM_NLINKS; i++, plink++, pen++, psevr++, pdur++, pdly++, pcnt++, pmdc++, pstr+=ALARM_STR_LEN) {
         char lval[ALARM_STR_LEN];
         epicsEnum16 lsev = epicsSevNone;
@@ -159,54 +150,44 @@ static long process(dbCommon *pcommon)
                 *pdur += timeDiff;
             }
 
-            if (!dbLinkIsConstant(plink) && *pen == menuYesNoYES) {
+            if (!dbLinkIsConstant(plink) && *pen == menuYesNoYES &&
+                *pdur >= *pdly && *pcnt >= *pmdc) {
 // TODO: UDF but lsevr == epicsSevNone
 
-                if (*pdur >= *pdly && *pcnt >= *pmdc) {
-                    alarmed |= (1 << i);
-                }
+                // This link is now effectively in alarm, is it the strongest?
+                if (lsev == epicsSevNone) {
+                    snprintf(lval, ALARM_STR_LEN, "link %d disconnected", i);
+                    sevr = epicsSevInvalid;
+                    stat = epicsAlarmLink;
 
-fprintf(stderr, "ALARMED Link %d: val=%s duration=%.4fs sev=%d\n", i, lval, *pdur, sevr);
-
-                // The first alarmed link drives this record value and status
-                if (first) {
-                    // Allow other links with lower pdly to trigger the alarm first
-                    if (*pdur >= *pdly) {
-                        first = 0;
-                    }
-
-                    if (lsev == epicsSevNone) {
-                        // Probably CA link got disconnected
-                        sprintf(lval, "Invalid link %d", i);
-                        sevr = epicsSevInvalid;
-                        stat = epicsAlarmLink;
-                    } else if (*psevr != epicsSevNone) {
+                } else if (*pdur < mindur) {
+                    mindur = *pdur;
+                    if (*psevr != epicsSevNone) {
                         // Using SEVR from the record, but keep STAT
-                        sevr = *psevr;
-                        stat = lsta;
-                    } else {
+                        lsev = *psevr;
+                    }
+                    if (lsev > sevr) {
                         sevr = lsev;
                         stat = lsta;
                     }
+                }
 
-                    // Use STR from the record if available,
-                    // otherwise use link value directly
-                    if (!*pstr) {
-                        strncpy(val, lval, ALARM_STR_LEN);
-                    } else if (strstr(pstr, "%s") == NULL) {
-                        strncpy(val, pstr, ALARM_STR_LEN);
-                    } else {
-                        snprintf(val, ALARM_STR_LEN, pstr, lval);
-                    }
+                // Use STR from the record if available,
+                // otherwise use link's value directly
+                if (!*pstr) {
+                    strncpy(val, lval, ALARM_STR_LEN);
+                } else if (strstr(pstr, "%s") != NULL) {
+                    snprintf(val, ALARM_STR_LEN, pstr, lval);
+                } else {
+                    strncpy(val, pstr, ALARM_STR_LEN);
                 }
             }
         }
     }
 
-    if (prec->rctx->alarmed != alarmed) {
+    if (sevr != epicsSevNone || stat != epicsAlarmNone) {
         unsigned short monitor_mask;
 
-        prec->rctx->alarmed = alarmed;
         recGblSetSevr(prec, stat, sevr);
         strncpy(prec->val, val, ALARM_STR_LEN);
 
