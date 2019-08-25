@@ -107,6 +107,8 @@ static long process(dbCommon *pcommon)
     epicsEnum16 *psevr;
     double *pdur;
     double *pdly;
+    long *pcnt;
+    long *pmdc;
     int i;
     int first;
     epicsTimeStamp timeLast;
@@ -130,26 +132,37 @@ static long process(dbCommon *pcommon)
     psevr = &prec->sev1;
     pdur = &prec->dur1;
     pdly = &prec->dly1;
+    pcnt = &prec->cnt1;
+    pmdc = &prec->mdc1;
     first = 1;
-    for(i = 0; i < ALARM_NLINKS; i++, plink++, pen++, psevr++, pdur++, pdly++, pstr+=ALARM_STR_LEN) {
+    for(i = 0; i < ALARM_NLINKS; i++, plink++, pen++, psevr++, pdur++, pdly++, pcnt++, pmdc++, pstr+=ALARM_STR_LEN) {
+        char lval[ALARM_STR_LEN];
+        epicsEnum16 lsev = epicsSevNone;
+        epicsEnum16 lsta = epicsAlarmNone;
 
-        if (!dbLinkIsConstant(plink) && *pen == menuYesNoYES) {
-            char lval[ALARM_STR_LEN];
-            epicsEnum16 lsev = epicsSevNone;
-            epicsEnum16 lsta = epicsAlarmNone;
+        if (dbGetAlarm(plink, &lsta, &lsev) == 0 &&
+            dbGetLink(plink, DBR_STRING, lval, 0, 0) == 0 &&
+            lsev == epicsSevNone) {
+            
+            *pcnt = 0;
+            *pdur = -1;
 
-            if (dbGetAlarm(plink, &lsta, &lsev) != 0 || 
-	            dbGetLink(plink, DBR_STRING, lval, 0, 0) != 0 ||
-                lsev != epicsSevNone) {
+        } else {
+            // This link is in alarm mode, investigate why and decide
+            // whether alarm needs to propagate to record level
 
+            // Do alarm accounting
+            *pcnt += 1;
+            if (*pdur < 0) {
+                *pdur = 0;
+            } else {
+                *pdur += timeDiff;
+            }
+
+            if (!dbLinkIsConstant(plink) && *pen == menuYesNoYES) {
 // TODO: UDF but lsevr == epicsSevNone
 
-                if (*pdur < 0) {
-                    *pdur = 1;
-                } else {
-                    *pdur += timeDiff;
-                }
-                if (*pdur >= *pdly) {
+                if (*pdur >= *pdly && *pcnt >= *pmdc) {
                     alarmed |= (1 << i);
                 }
 
@@ -186,11 +199,7 @@ fprintf(stderr, "ALARMED Link %d: val=%s duration=%.4fs sev=%d\n", i, lval, *pdu
                         snprintf(val, ALARM_STR_LEN, pstr, lval);
                     }
                 }
-            } else {
-                *pdur = -1;
             }
-        } else {
-            *pdur = -1;
         }
     }
 
@@ -198,8 +207,6 @@ fprintf(stderr, "ALARMED Link %d: val=%s duration=%.4fs sev=%d\n", i, lval, *pdu
         unsigned short monitor_mask;
 
         prec->rctx->alarmed = alarmed;
-//        prec->nsta = stat;
-//        prec->nsev = sevr;
         recGblSetSevr(prec, stat, sevr);
         strncpy(prec->val, val, ALARM_STR_LEN);
 

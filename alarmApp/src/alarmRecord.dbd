@@ -8,19 +8,19 @@
 #*************************************************************************
 recordtype(alarm) {
 	include "dbCommon.dbd" 
-    field(RCTX,DBF_NOACCESS) {
-        prompt("Record Private")
-        special(SPC_NOMOD)
-        interest(4)
-        extra("struct alarmRecordCtx *rctx")
-    }
-    field(VAL,DBF_STRING) {
-        prompt("Current Value")
-        promptgroup(GUI_INPUTS)
-        asl(ASL0)
-        pp(TRUE)
-        size(100)
-    }
+	field(RCTX,DBF_NOACCESS) {
+		prompt("Record Private")
+		special(SPC_NOMOD)
+		interest(4)
+		extra("struct alarmRecordCtx *rctx")
+	}
+	field(VAL,DBF_STRING) {
+		prompt("Current Value")
+		promptgroup(GUI_INPUTS)
+		asl(ASL0)
+		pp(TRUE)
+		size(100)
+	}
 	field(INP1,DBF_INLINK) {
 		prompt("Input 1")
 		promptgroup(GUI_CALC)
@@ -36,30 +36,30 @@ recordtype(alarm) {
 		promptgroup(GUI_CALC)
 		interest(1)
 	}
-    field(STR1,DBF_STRING) {
-        prompt("String 1")
-        promptgroup(GUI_OUTPUT)
-        asl(ASL0)
-        initial("%s")
-        pp(TRUE)
-        size(100)
-    }
-    field(STR2,DBF_STRING) {
-        prompt("String 2")
-        promptgroup(GUI_OUTPUT)
-        asl(ASL0)
-        initial("%s")
-        pp(TRUE)
-        size(100)
-    }
-    field(STR3,DBF_STRING) {
-        prompt("String 3")
-        promptgroup(GUI_OUTPUT)
-        asl(ASL0)
-        initial("%s")
-        pp(TRUE)
-        size(100)
-    }
+	field(STR1,DBF_STRING) {
+		prompt("String 1")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
+		pp(TRUE)
+		size(100)
+	}
+	field(STR2,DBF_STRING) {
+		prompt("String 2")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
+		pp(TRUE)
+		size(100)
+	}
+	field(STR3,DBF_STRING) {
+		prompt("String 3")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
+		pp(TRUE)
+		size(100)
+	}
 	field(SEV1,DBF_MENU) {
 		prompt("Severity 1")
 		promptgroup(GUI_ALARMS)
@@ -83,23 +83,23 @@ recordtype(alarm) {
 	}
 	field(EN1,DBF_MENU) {
 		prompt("Enable link 1")
-        promptgroup(GUI_INPUTS)
+		promptgroup(GUI_INPUTS)
 		pp(TRUE)
-        initial("1")
+		initial("1")
 		menu(menuYesNo)
 	}
 	field(EN2,DBF_MENU) {
 		prompt("Enable link 2")
-        promptgroup(GUI_INPUTS)
+		promptgroup(GUI_INPUTS)
 		pp(TRUE)
-        initial("1")
+	initial("1")
 		menu(menuYesNo)
 	}
 	field(EN3,DBF_MENU) {
 		prompt("Enable link 3")
-        promptgroup(GUI_INPUTS)
+		promptgroup(GUI_INPUTS)
 		pp(TRUE)
-        initial("1")
+		initial("1")
 		menu(menuYesNo)
 	}
 	field(DLY1,DBF_DOUBLE) {
@@ -117,17 +117,44 @@ recordtype(alarm) {
 	field(DUR1,DBF_DOUBLE) {
 		prompt("Duration 1")
 		pp(TRUE)
-        initial("-1")
+		initial("-1")
 	}
 	field(DUR2,DBF_DOUBLE) {
 		prompt("Duration 2")
 		pp(TRUE)
-        initial("-1")
+		initial("-1")
 	}
 	field(DUR3,DBF_DOUBLE) {
 		prompt("Duration 3")
 		pp(TRUE)
-        initial("-1")
+		initial("-1")
+	}
+	field(MDC1,DBF_LONG) {
+		prompt("Min debounce count 1")
+		initial("1")
+		pp(TRUE)
+	}
+	field(MDC2,DBF_LONG) {
+		prompt("Min debounce count 2")
+		initial("1")
+		pp(TRUE)
+	}
+	field(MDC3,DBF_LONG) {
+		prompt("Min debounce count 3")
+		initial("1")
+		pp(TRUE)
+	}
+	field(CNT1,DBF_LONG) {
+		prompt("Debounce count 1")
+		pp(TRUE)
+	}
+	field(CNT2,DBF_LONG) {
+		prompt("Debounce count 2")
+		pp(TRUE)
+	}
+	field(CNT3,DBF_LONG) {
+		prompt("Debounce count 3")
+		pp(TRUE)
 	}
 	%/* Number of INPx fields defined */
 	%#define ALARM_NLINKS 3
