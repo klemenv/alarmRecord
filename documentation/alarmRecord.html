@@ -24,6 +24,7 @@ content="text/html; charset=iso-8859-1">
     <li><a href="#Alarm Text Parameters">Alarm Text Parameters</a></li>
     <li><a href="#Alarm Severity Override Parameters">Alarm Severity Override Parameters</a></li>
     <li><a href="#Output Parameters">Problems with the Standard EPICS PID Record</a></li>
+    <li><a href="#Example Database">Example Database</a></li>
 </ul>
 
 <p>&nbsp;</p>
@@ -34,7 +35,7 @@ content="text/html; charset=iso-8859-1">
 
 <p>The Alarm record is used to provide contextual text description
 of the most significant alarm from up to 10 other linked records.
-The alarm mechanism is similar to other records with multiple inputs,
+The alarm mechanism is similar to other standard records with multiple inputs,
 except that it silently enforces Channel Access status and severity for all
 linked records. Whenever the record processes, it scans all
 linked records for alarms. Debounce mechanism ensures minimal
@@ -56,7 +57,7 @@ SEVx allows to override the severity from the linked record.</p>
 <hr>
 
 <p>The Alarm record has the standard fields (SCAN, etc.) for 
-specifying under what circumstances it will processed. There is no
+specifying under what circumstances it will process. There is no
 device support associated to the record and I/O Intr is not
 supported. Record processing will occur either when SCAN
 is set for periodic processing, when triggered externally or
@@ -202,136 +203,27 @@ be database links or Channel Access links only.</p>
 <hr>
 
 <p>Input links can be enabled or disabled. When disabled,
-input link can still trigger processing of the record but 
-it will not be considered.</p>
+input link can still trigger processing of the record and
+update accounting fields (CNTx, DURx),
+but its alarm will not propagate to the record.</p>
 
 <table border="1">
-    <tr>
-        <th>Field</th>
-        <th>Summary</th>
-        <th>Type</th>
-        <th>DCT</th>
-        <th>Initial</th>
-        <th>Access</th>
-        <th>Modify</th>
-        <th>Rec Proc Monitor</th>
-        <th>PP</th>
-    </tr>
-    <tr>
-        <td>EN1</td>
-        <td>Link 1 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN2</td>
-        <td>Link 2 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN3</td>
-        <td>Link 3 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN4</td>
-        <td>Link 4 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN5</td>
-        <td>Link 5 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN6</td>
-        <td>Link 6 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN7</td>
-        <td>Link 7 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN8</td>
-        <td>Link 8 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN9</td>
-        <td>Link 9 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
-    <tr>
-        <td>EN10</td>
-        <td>Link 10 enable flag</td>
-        <td>GBLCHOICE</td>
-        <td>Yes</td>
-        <td>YES</td>
-        <td>Yes</td>
-        <td>Yes</td>
-        <td>N/A</td>
-        <td>No</td>
-    </tr>
+    <tr><th>Field</th><th>Summary</th>            <th>Type</th>     <th>DCT</th><th>Initial</th><th>Access</th><th>Modify</th><th>Rec Proc Monitor</th><th>PP</th></tr>
+    <tr><td>EN1</td>  <td>Link 1 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN2</td>  <td>Link 2 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN3</td>  <td>Link 3 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN4</td>  <td>Link 4 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN5</td>  <td>Link 5 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN6</td>  <td>Link 6 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN7</td>  <td>Link 7 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN8</td>  <td>Link 8 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN9</td>  <td>Link 9 enable flag</td> <td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
+    <tr><td>EN10</td> <td>Link 10 enable flag</td><td>GBLCHOICE</td><td>Yes</td><td>YES</td>    <td>Yes</td>   <td>Yes</td>   <td>N/A</td>             <td>No</td></tr>
 </table>
 
 <p>&nbsp;</p>
 
-<h2 align="center"><a name="Alarm Duration Parameters">Alarm Duration Parameters</a></h2>
+<h2 align="center"><a name="Alarm Debounce Parameters">Alarm Debounce Parameters</a></h2>
 
 <hr>
 

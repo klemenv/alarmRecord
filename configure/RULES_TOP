@@ -1,3 +1,4 @@
-#RULES_TOP
-include $(EPICS_BASE)/configure/RULES_TOP
+# extensions/configure/RULES_TOP
+
+include $(CONFIG)/RULES_TOP
 

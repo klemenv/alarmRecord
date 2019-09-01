@@ -1,0 +1,17 @@
+record(longin, "Input1") {
+    field(HIGH, "10")
+    field(HSV,  "MAJOR")
+    field(VAL,  "13")
+}
+record(stringin, "Input2") {
+    field(VAL,  "Hello world")
+}
+record(alarm, "Alarm") {
+    field(INP1, "Input1 CP")
+    field(STR1, "Input 1 in alarm")
+    field(SEV1, "MAJOR")
+    field(DLY1, "5.0")
+    field(INP2, "Input2 CP")
+    field(SEV2, "MAJOR")
+    field(SCAN, "1 second")
+}

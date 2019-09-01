@@ -8,6 +8,12 @@
 #*************************************************************************
 recordtype(alarm) {
 	include "dbCommon.dbd" 
+	field(RCTX,DBF_NOACCESS) {
+		prompt("Record Private")
+		special(SPC_NOMOD)
+		interest(4)
+		extra("struct alarmRecordCtx *rctx")
+	}
 	field(VAL,DBF_STRING) {
 		prompt("Current Value")
 		promptgroup(GUI_INPUTS)
@@ -108,46 +114,31 @@ recordtype(alarm) {
 		prompt("Debounce delay 3")
 		pp(TRUE)
 	}
-	field(DUR1,DBF_DOUBLE) {
-		prompt("Duration 1")
+	field(INT1,DBF_DOUBLE) {
+		prompt("Debounce interval 1")
 		pp(TRUE)
-		initial("-1")
 	}
-	field(DUR2,DBF_DOUBLE) {
-		prompt("Duration 2")
+	field(INT2,DBF_DOUBLE) {
+		prompt("Debounce interval 2")
 		pp(TRUE)
-		initial("-1")
 	}
-	field(DUR3,DBF_DOUBLE) {
-		prompt("Duration 3")
+	field(INT3,DBF_DOUBLE) {
+		prompt("Debounce interval 3")
 		pp(TRUE)
-		initial("-1")
 	}
-	field(MDC1,DBF_LONG) {
+	field(CNT1,DBF_LONG) {
 		prompt("Min debounce count 1")
 		initial("1")
 		pp(TRUE)
 	}
-	field(MDC2,DBF_LONG) {
+	field(CNT2,DBF_LONG) {
 		prompt("Min debounce count 2")
 		initial("1")
 		pp(TRUE)
 	}
-	field(MDC3,DBF_LONG) {
+	field(CNT3,DBF_LONG) {
 		prompt("Min debounce count 3")
 		initial("1")
-		pp(TRUE)
-	}
-	field(CNT1,DBF_LONG) {
-		prompt("Debounce count 1")
-		pp(TRUE)
-	}
-	field(CNT2,DBF_LONG) {
-		prompt("Debounce count 2")
-		pp(TRUE)
-	}
-	field(CNT3,DBF_LONG) {
-		prompt("Debounce count 3")
 		pp(TRUE)
 	}
 	%/* Number of INPx fields defined */
