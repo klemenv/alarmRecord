@@ -71,21 +71,59 @@ rset alarmRSET={
 };
 epicsExportAddress(rset, alarmRSET);
 
+typedef struct ProcessTimeNode {
+    struct ProcessTimeNode *prev;
+    struct ProcessTimeNode *next;
+    epicsTimeStamp time;
+} ProcessTimeNode;
+
+struct alarmRecordCtx {
+    int initPost;
+    struct {
+        epicsEnum16 sevr;
+        epicsEnum16 stat;
+        ProcessTimeNode *procTimes;
+    } links[ALARM_NLINKS];
+    long alarmMask;
+};
+
 static long init_record(dbCommon *pcommon, int pass)
 {
     struct alarmRecord *prec = (struct alarmRecord *)pcommon;
     struct link *plink;
+    epicsInt32 *pcnt;
     char value[ALARM_STR_LEN];
-    int i;
+    int i, j;
 
-    if (pass == 1) {
-        plink = &prec->inp1;
-        for (i = 0; i < ALARM_NLINKS; i++, plink++) {
-            if (dbLinkIsConstant(plink)) {
-                recGblRecordError(S_dev_badInpType, (void *)prec, "alarm:init_record");
-                return S_dev_badInpType;
+    if (pass == 0) {
+        prec->rctx = (struct alarmRecordCtx *) callocMustSucceed(1, sizeof(struct alarmRecordCtx), "alarmRecord");
+        return 0;
+    }
+
+    plink = &prec->inp1;
+    pcnt = &prec->cnt1;
+    for (i = 0; i < ALARM_NLINKS; i++, plink++, pcnt++) {
+        if (dbLinkIsConstant(plink)) {
+            continue;
+        }
+
+        recGblInitConstantLink(plink, DBF_STRING, value);
+
+        if (*pcnt < 1) {
+            *pcnt = 1;
+        }
+        for (j = 0; j < *pcnt; j++) {
+            ProcessTimeNode *node = (ProcessTimeNode*) callocMustSucceed(1, sizeof(ProcessTimeNode), "alarmRecord");
+            if (!prec->rctx->links[i].procTimes) {
+                node->next = node;
+                node->prev = node;
+            } else {
+                node->next = prec->rctx->links[i].procTimes;
+                node->prev = prec->rctx->links[i].procTimes->prev;
+                prec->rctx->links[i].procTimes->prev->next = node;
+                prec->rctx->links[i].procTimes->prev = node;
             }
-            recGblInitConstantLink(plink, DBF_STRING, value);
+            prec->rctx->links[i].procTimes = node;
         }
     }
     return 0;
@@ -98,95 +136,130 @@ static long process(dbCommon *pcommon)
     char *pstr;
     epicsEnum16 *pen;
     epicsEnum16 *psevr;
-    double *pdur;
     double *pdly;
+    double *pint;
     epicsInt32 *pcnt;
-    epicsInt32 *pmdc;
     int i;
-    epicsTimeStamp timeLast;
-    double timeDiff;
-    epicsEnum16 sevr = epicsSevNone;
-    epicsEnum16 stat = epicsAlarmNone;
-    char val[ALARM_STR_LEN] = "";
-    double mindur = 0.0;
+    epicsEnum16 sevr = epicsSevNone; // New record severity
+    epicsEnum16 stat = (prec->rctx->initPost == 0 ? epicsAlarmUDF : epicsAlarmNone); // New record status
+    epicsEnum16 tsev = epicsSevNone; // Highest newly triggered severity
+    char val[ALARM_STR_LEN] = "no alarm"; // New record string value
+    long alarmMask = 0;
+    epicsTimeStamp invalidTime = { 0, 0 };
 
     prec->pact = TRUE;
-    timeLast = prec->time;
-    prec->val[0] = '\0'; // this will get overriden by the first alarm
-
-    // Time since last processed, added to previously active alarmed durations
     recGblGetTimeStamp(prec);
-    timeDiff = epicsTimeDiffInSeconds(&prec->time, &timeLast);
 
     plink = &prec->inp1;
     pstr = prec->str1;
     pen = &prec->en1;
     psevr = &prec->sev1;
-    pdur = &prec->dur1;
     pdly = &prec->dly1;
     pcnt = &prec->cnt1;
-    pmdc = &prec->mdc1;
-    for(i = 0; i < ALARM_NLINKS; i++, plink++, pen++, psevr++, pdur++, pdly++, pcnt++, pmdc++, pstr+=ALARM_STR_LEN) {
+    pint = &prec->int1;
+    for(i = 0; i < ALARM_NLINKS; i++, plink++, pen++, psevr++, pdly++, pcnt++, pint++, pstr+=ALARM_STR_LEN) {
         char lval[ALARM_STR_LEN];
         epicsEnum16 lsev = epicsSevNone;
         epicsEnum16 lsta = epicsAlarmNone;
 
+        if (dbLinkIsConstant(plink) || *pen == menuYesNoNO) {
+            continue;
+        }
+
         if (dbGetAlarm(plink, &lsta, &lsev) == 0 &&
             dbGetLink(plink, DBR_STRING, lval, 0, 0) == 0 &&
-            lsev == epicsSevNone) {
-            
-            *pcnt = 0;
-            *pdur = -1;
+            lsev == epicsSevNone && lsta == epicsAlarmNone) {
 
-        } else {
-            // This link is in alarm mode, investigate why and decide
-            // whether alarm needs to propagate to record level
+//fprintf(stderr, "Link %d: SEVR=%d STAT=%d\n", i, lsev, lsta);
 
-            // Do alarm accounting
-            *pcnt += 1;
-            if (*pdur < 0) {
-                *pdur = 0;
-            } else {
-                *pdur += timeDiff;
+            prec->rctx->links[i].sevr = epicsSevNone;
+            prec->rctx->links[i].stat = epicsAlarmNone;
+
+            if (*pcnt == 1) {
+                prec->rctx->links[i].procTimes->time = invalidTime;
             }
 
-            if (!dbLinkIsConstant(plink) && *pen == menuYesNoYES &&
-                *pdur >= *pdly && *pcnt >= *pmdc) {
-// TODO: UDF but lsevr == epicsSevNone
+        } else {
 
-                // This link is now effectively in alarm, is it the strongest?
-                if (lsev == epicsSevNone) {
-                    snprintf(lval, ALARM_STR_LEN, "link %d disconnected", i);
-                    sevr = epicsSevInvalid;
-                    stat = epicsAlarmLink;
+            // This link is in alarm mode, investigate why and decide
+            // whether alarm needs to propagate to record level
+            int effective = 0;
+            int triggered = 0;
+            double duration = epicsTimeDiffInSeconds(&prec->time, &prec->rctx->links[i].procTimes->time);
 
-                } else if (*pdur < mindur) {
-                    mindur = *pdur;
-                    if (*psevr != epicsSevNone) {
-                        // Using SEVR from the record, but keep STAT
-                        lsev = *psevr;
-                    }
-                    if (lsev > sevr) {
-                        sevr = lsev;
-                        stat = lsta;
-                    }
+//fprintf(stderr, "Link %d: SEVR=%d STAT=%d\n", i, lsev, lsta);
+
+            // Adjust severity and status
+            if (lsev == epicsSevNone && lsta == epicsAlarmNone) {
+                lsev = epicsSevInvalid;
+                lsta = epicsAlarmLink;
+                snprintf(lval, ALARM_STR_LEN, "link %d disconnected", i);
+            }
+            if (*psevr != epicsSevNone) {
+                // Using SEVR from the record, but keep STAT
+                lsev = *psevr;
+            }
+
+            triggered |= (prec->rctx->links[i].sevr != lsev);
+            triggered |= (prec->rctx->links[i].stat != lsta);
+
+            if (triggered) {
+fprintf(stderr, "Link %d triggered\n", i);
+                prec->rctx->links[i].procTimes->time = prec->time;
+                if (*pcnt == 1) {
+                    duration = 0;
+                } else {
+                    prec->rctx->links[i].procTimes = prec->rctx->links[i].procTimes->next;
+                }
+            }
+
+            if (*pcnt == 1) {
+                effective = (duration >= *pdly);
+            } else if (prec->rctx->links[i].sevr == lsev && prec->rctx->links[i].stat == lsta) {
+                effective = (duration < *pint);
+            } else {
+                // SEVR or STAT chaged, we may need to update VAL too
+                effective = 1;
+            }
+            prec->rctx->links[i].sevr = lsev;
+            prec->rctx->links[i].stat = lsta;
+
+            if (effective) {
+                int highest = 0;
+fprintf(stderr, "Link %d effective\n", i);
+
+                alarmMask |= (1 << i);
+
+                highest = (lsev > sevr);
+                if (triggered && lsev > tsev) {
+                    tsev = lsev;
+                    highest = 1;
                 }
 
-                // Use STR from the record if available,
-                // otherwise use link's value directly
-                if (!*pstr) {
-                    strncpy(val, lval, ALARM_STR_LEN);
-                } else if (strstr(pstr, "%s") != NULL) {
-                    snprintf(val, ALARM_STR_LEN, pstr, lval);
-                } else {
-                    strncpy(val, pstr, ALARM_STR_LEN);
+                if (highest) {
+                    sevr = lsev;
+                    stat = lsta;
+
+                    // Use STR from the record if available,
+                    // otherwise use link's value directly
+                    if (!*pstr) {
+                        strncpy(val, lval, ALARM_STR_LEN);
+                    } else if (strstr(pstr, "%s") != NULL) {
+                        snprintf(val, ALARM_STR_LEN, pstr, lval);
+                    } else {
+                        strncpy(val, pstr, ALARM_STR_LEN);
+                    }
                 }
             }
         }
     }
 
-    if (sevr != epicsSevNone || stat != epicsAlarmNone) {
+    if (alarmMask != prec->rctx->alarmMask || prec->rctx->initPost == 0) {
         unsigned short monitor_mask;
+
+fprintf(stderr, "Posting value\n");
+        prec->rctx->initPost = 1;
+        prec->rctx->alarmMask = alarmMask;
 
         recGblSetSevr(prec, stat, sevr);
         strncpy(prec->val, val, ALARM_STR_LEN);
