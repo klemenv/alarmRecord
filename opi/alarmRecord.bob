@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Alarm config $(R)</name>
+  <macros>
+    <R>Alarm</R>
+  </macros>
+  <width>900</width>
+  <widget type="label" version="2.0.0">
+    <name>Label_1</name>
+    <text>Status:</text>
+    <x>10</x>
+    <y>30</y>
+    <width>60</width>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update</name>
+    <pv_name>$(R).VAL</pv_name>
+    <x>80</x>
+    <y>30</y>
+    <width>290</width>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_3</name>
+    <text>Latch:</text>
+    <x>10</x>
+    <y>90</y>
+    <width>70</width>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>Check Box</name>
+    <pv_name>$(R).LCH</pv_name>
+    <label></label>
+    <x>80</x>
+    <y>90</y>
+    <width>30</width>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>$(pv_name)</pv_name>
+        <value>1</value>
+        <description>Write PV</description>
+      </action>
+    </actions>
+    <pv_name>$(R).CLR</pv_name>
+    <text>Clear</text>
+    <x>110</x>
+    <y>90</y>
+    <height>20</height>
+    <tooltip>$(actions)</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_4</name>
+    <text>Input PV</text>
+    <x>10</x>
+    <y>130</y>
+    <width>190</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_5</name>
+    <text>Text when in alarm</text>
+    <x>480</x>
+    <y>130</y>
+    <width>160</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_6</name>
+    <text>Override severity</text>
+    <x>780</x>
+    <y>130</y>
+    <width>120</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_7</name>
+    <text>Minimum severity</text>
+    <x>650</x>
+    <y>130</y>
+    <width>120</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_8</name>
+    <text>Enable</text>
+    <x>210</x>
+    <y>130</y>
+    <width>60</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_9</name>
+    <text>Delay</text>
+    <x>270</x>
+    <y>130</y>
+    <width>60</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_10</name>
+    <text>Debounce</text>
+    <x>340</x>
+    <y>110</y>
+    <width>130</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_11</name>
+    <text>count</text>
+    <x>340</x>
+    <y>130</y>
+    <width>60</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_12</name>
+    <text>interval</text>
+    <x>410</x>
+    <y>130</y>
+    <width>60</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group</name>
+    <macros>
+      <L>1</L>
+    </macros>
+    <x>10</x>
+    <y>160</y>
+    <width>890</width>
+    <height>20</height>
+    <style>3</style>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_1</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>190</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>470</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>770</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_1</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>640</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_1</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>220</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_1</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>260</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_2</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>330</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_3</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>400</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_3</name>
+    <macros>
+      <L>2</L>
+    </macros>
+    <x>10</x>
+    <y>190</y>
+    <width>890</width>
+    <height>20</height>
+    <style>3</style>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_12</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>470</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_6</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>770</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_7</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>640</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_4</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>220</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_13</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>260</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_14</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>330</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_15</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>400</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_4</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>190</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_13</name>
+    <text>Enable:</text>
+    <x>10</x>
+    <y>60</y>
+    <width>70</width>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>Check Box_5</name>
+    <pv_name>$(R).EN</pv_name>
+    <label></label>
+    <x>80</x>
+    <y>60</y>
+    <width>30</width>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+</display>

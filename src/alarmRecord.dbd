@@ -1,24 +1,36 @@
-#*************************************************************************
-# Copyright (c) 2007 UChicago Argonne LLC, as Operator of Argonne
-#     National Laboratory.
-# Copyright (c) 2002 The Regents of the University of California, as
-#     Operator of Los Alamos National Laboratory.
-# EPICS BASE is distributed subject to a Software License Agreement found
-# in file LICENSE that is included with this distribution. 
-#*************************************************************************
 recordtype(alarm) {
 	include "dbCommon.dbd" 
-	field(RCTX,DBF_NOACCESS) {
+	field(CTX,DBF_NOACCESS) {
 		prompt("Record Private")
 		special(SPC_NOMOD)
 		interest(4)
-		extra("struct alarmRecordCtx *rctx")
+		extra("struct alarmRecordCtx *ctx")
+	}
+	field(EN,DBF_MENU) {
+		prompt("Alarms enable")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(LCH,DBF_MENU) {
+		prompt("Enable latching mode")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(CLR,DBF_UCHAR) {
+		prompt("Clear latched alarm")
+		initial("1")
+		pp(TRUE)
 	}
 	field(VAL,DBF_STRING) {
 		prompt("Current Value")
 		promptgroup(GUI_INPUTS)
 		asl(ASL0)
 		pp(TRUE)
+		initial("OK")
 		size(100)
 	}
 	field(INP1,DBF_INLINK) {
@@ -61,21 +73,42 @@ recordtype(alarm) {
 		size(100)
 	}
 	field(SEV1,DBF_MENU) {
-		prompt("Severity 1")
+		prompt("Override severity 1")
 		promptgroup(GUI_ALARMS)
 		pp(TRUE)
 		interest(1)
 		menu(menuAlarmSevr)
 	}
 	field(SEV2,DBF_MENU) {
-		prompt("Severity 2")
+		prompt("Override severity 2")
 		promptgroup(GUI_ALARMS)
 		pp(TRUE)
 		interest(1)
 		menu(menuAlarmSevr)
 	}
 	field(SEV3,DBF_MENU) {
-		prompt("Severity 3")
+		prompt("Override severity 3")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV1,DBF_MENU) {
+		prompt("Minimum severity 1")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV2,DBF_MENU) {
+		prompt("Minimum severity 2")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV3,DBF_MENU) {
+		prompt("Minimum severity 3")
 		promptgroup(GUI_ALARMS)
 		pp(TRUE)
 		interest(1)
@@ -92,7 +125,7 @@ recordtype(alarm) {
 		prompt("Enable link 2")
 		promptgroup(GUI_INPUTS)
 		pp(TRUE)
-	initial("1")
+		initial("1")
 		menu(menuYesNo)
 	}
 	field(EN3,DBF_MENU) {
@@ -103,41 +136,44 @@ recordtype(alarm) {
 		menu(menuYesNo)
 	}
 	field(DLY1,DBF_DOUBLE) {
-		prompt("Debounce delay 1")
+		prompt("Active alarm delay 1")
 		pp(TRUE)
 	}
 	field(DLY2,DBF_DOUBLE) {
-		prompt("Debounce delay 2")
+		prompt("Active alarm delay 2")
 		pp(TRUE)
 	}
 	field(DLY3,DBF_DOUBLE) {
-		prompt("Debounce delay 3")
+		prompt("Active alarm delay 3")
 		pp(TRUE)
 	}
-	field(INT1,DBF_DOUBLE) {
+	field(DBI1,DBF_DOUBLE) {
 		prompt("Debounce interval 1")
+		initial("0.0")
 		pp(TRUE)
 	}
-	field(INT2,DBF_DOUBLE) {
+	field(DBI2,DBF_DOUBLE) {
 		prompt("Debounce interval 2")
+		initial("0.0")
 		pp(TRUE)
 	}
-	field(INT3,DBF_DOUBLE) {
+	field(DBI3,DBF_DOUBLE) {
 		prompt("Debounce interval 3")
+		initial("0.0")
 		pp(TRUE)
 	}
-	field(CNT1,DBF_LONG) {
-		prompt("Min debounce count 1")
+	field(DBC1,DBF_ULONG) {
+		prompt("Debounce count limit 1")
 		initial("1")
 		pp(TRUE)
 	}
-	field(CNT2,DBF_LONG) {
-		prompt("Min debounce count 2")
+	field(DBC2,DBF_ULONG) {
+		prompt("Debounce count limit 2")
 		initial("1")
 		pp(TRUE)
 	}
-	field(CNT3,DBF_LONG) {
-		prompt("Min debounce count 3")
+	field(DBC3,DBF_ULONG) {
+		prompt("Debounce count limit 3")
 		initial("1")
 		pp(TRUE)
 	}

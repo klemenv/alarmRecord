@@ -12,3 +12,5 @@ test_registerRecordDeviceDriver pdbbase
 dbLoadRecords("db/test.db")
 
 cd "${TOP}/iocBoot/${IOC}"
+
+iocInit()

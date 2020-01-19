@@ -2,3 +2,8 @@ O.Common
 O.linux-*
 dbd/
 include/
+bin/
+lib/
+db/
+dbd/
+envPaths

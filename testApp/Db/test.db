@@ -1,10 +1,26 @@
 record(longin, "Input1") {
+    field(LOLO, "-5")
+    field(LOW,  "-1")
     field(HIGH, "10")
-    field(HSV,  "MAJOR")
-    field(VAL,  "13")
+    field(HIHI, "15")
+    field(HSV,  "MINOR")
+    field(HHSV, "MAJOR")
+    field(LSV,  "MINOR")
+    field(LLSV, "MAJOR")
+    field(VAL,  "9")
+    field(PINI, "YES")
 }
-record(stringin, "Input2") {
-    field(VAL,  "Hello world")
+record(longin, "Input2") {
+    field(LOLO, "-5")
+    field(LOW,  "-1")
+    field(HIGH, "10")
+    field(HIHI, "15")
+    field(HSV,  "MINOR")
+    field(HHSV, "MAJOR")
+    field(LSV,  "MINOR")
+    field(LLSV, "MAJOR")
+    field(VAL,  "2")
+    field(PINI, "YES")
 }
 record(alarm, "Alarm") {
     field(INP1, "Input1 CP")
@@ -12,6 +28,7 @@ record(alarm, "Alarm") {
     field(SEV1, "MAJOR")
     field(DLY1, "5.0")
     field(INP2, "Input2 CP")
-    field(SEV2, "MAJOR")
-    field(SCAN, "1 second")
+    field(DBI2, "60")
+    field(DBC2, "3")
+    field(SCAN, ".5 second")
 }
