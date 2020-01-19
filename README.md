@@ -7,6 +7,9 @@ way to filter out noise or intermittent alarms. Each link could be individually 
 Finally, the global settings allow for Alarm record to latch status until clear or disable the 
 record completely.
 
+
+![Example CS-Studio screen](img/example.png "Example CS-Studio screen")
+
 ## Global record fields
 
 VAL field contains textual description of the alarm. Its value is determined by the link that is in
