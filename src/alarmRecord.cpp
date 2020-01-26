@@ -19,6 +19,7 @@
 #include "dbEvent.h"
 #include "devSup.h"
 #include "epicsTime.h"
+#include "epicsVersion.h"
 #include "menuYesNo.h"
 #include "recSup.h"
 #include "recGbl.h"
@@ -30,6 +31,18 @@
 
 #include "CircularList.h"
 
+#ifdef VERSION_INT
+#  if EPICS_VERSION_INT < VERSION_INT(3,16,0,2)
+#    define dbLinkIsConstant(lnk) ((lnk)->type == CONSTANT)
+#    define RECSUPFUN_CAST (RECSUPFUN)
+#  else
+#    define RECSUPFUN_CAST
+#  endif
+#else
+#  define dbLinkIsConstant(lnk) ((lnk)->type == CONSTANT)
+#  define RECSUPFUN_CAST (RECSUPFUN)
+#endif
+
 static long init_record(dbCommon *, int);
 static long process_record(dbCommon *);
 
@@ -37,8 +50,8 @@ rset alarmRSET = {
     .number = RSETNUMBER,
     .report = NULL,
     .init = NULL,
-    .init_record = init_record,
-    .process = process_record,
+    .init_record = RECSUPFUN_CAST init_record,
+    .process = RECSUPFUN_CAST process_record,
     .special = NULL, 
     .get_value = NULL,
     .cvt_dbaddr = NULL,
