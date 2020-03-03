@@ -1,5 +1,5 @@
 recordtype(alarm) {
-	include "dbCommon.dbd" 
+	include "dbCommon.dbd"
 	field(CTX,DBF_NOACCESS) {
 		prompt("Record Private")
 		special(SPC_NOMOD)
@@ -27,12 +27,12 @@ recordtype(alarm) {
 	}
 	field(VAL,DBF_STRING) {
 		prompt("Current Value")
-		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
 		asl(ASL0)
-		pp(TRUE)
 		initial("OK")
-		size(100)
+		size(40)
 	}
+
 	field(INP1,DBF_INLINK) {
 		prompt("Input 1")
 		promptgroup(GUI_CALC)
@@ -48,13 +48,50 @@ recordtype(alarm) {
 		promptgroup(GUI_CALC)
 		interest(1)
 	}
+	field(INP4,DBF_INLINK) {
+		prompt("Input 4")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP5,DBF_INLINK) {
+		prompt("Input 5")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP6,DBF_INLINK) {
+		prompt("Input 6")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP7,DBF_INLINK) {
+		prompt("Input 7")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP8,DBF_INLINK) {
+		prompt("Input 8")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP9,DBF_INLINK) {
+		prompt("Input 9")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+	field(INP10,DBF_INLINK) {
+		prompt("Input 10")
+		promptgroup(GUI_CALC)
+		interest(1)
+	}
+
+
 	field(STR1,DBF_STRING) {
 		prompt("String 1")
 		promptgroup(GUI_OUTPUT)
 		asl(ASL0)
 		initial("%s")
 		pp(TRUE)
-		size(100)
+		size(40)
 	}
 	field(STR2,DBF_STRING) {
 		prompt("String 2")
@@ -62,7 +99,7 @@ recordtype(alarm) {
 		asl(ASL0)
 		initial("%s")
 		pp(TRUE)
-		size(100)
+		size(40)
 	}
 	field(STR3,DBF_STRING) {
 		prompt("String 3")
@@ -70,50 +107,67 @@ recordtype(alarm) {
 		asl(ASL0)
 		initial("%s")
 		pp(TRUE)
-		size(100)
+		size(40)
 	}
-	field(SEV1,DBF_MENU) {
-		prompt("Override severity 1")
-		promptgroup(GUI_ALARMS)
+	field(STR4,DBF_STRING) {
+		prompt("String 4")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
-	field(SEV2,DBF_MENU) {
-		prompt("Override severity 2")
-		promptgroup(GUI_ALARMS)
+	field(STR5,DBF_STRING) {
+		prompt("String 5")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
-	field(SEV3,DBF_MENU) {
-		prompt("Override severity 3")
-		promptgroup(GUI_ALARMS)
+	field(STR6,DBF_STRING) {
+		prompt("String 6")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
-	field(MSV1,DBF_MENU) {
-		prompt("Minimum severity 1")
-		promptgroup(GUI_ALARMS)
+	field(STR7,DBF_STRING) {
+		prompt("String 7")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
-	field(MSV2,DBF_MENU) {
-		prompt("Minimum severity 2")
-		promptgroup(GUI_ALARMS)
+	field(STR8,DBF_STRING) {
+		prompt("String 8")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
-	field(MSV3,DBF_MENU) {
-		prompt("Minimum severity 3")
-		promptgroup(GUI_ALARMS)
+	field(STR9,DBF_STRING) {
+		prompt("String 9")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
 		pp(TRUE)
-		interest(1)
-		menu(menuAlarmSevr)
+		size(40)
 	}
+	field(STR10,DBF_STRING) {
+		prompt("String 10")
+		promptgroup(GUI_OUTPUT)
+		asl(ASL0)
+		initial("%s")
+		pp(TRUE)
+		size(40)
+	}
+
+
+
 	field(EN1,DBF_MENU) {
 		prompt("Enable link 1")
 		promptgroup(GUI_INPUTS)
@@ -135,6 +189,277 @@ recordtype(alarm) {
 		initial("1")
 		menu(menuYesNo)
 	}
+	field(EN4,DBF_MENU) {
+		prompt("Enable link 4")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN5,DBF_MENU) {
+		prompt("Enable link 5")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN6,DBF_MENU) {
+		prompt("Enable link 6")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN7,DBF_MENU) {
+		prompt("Enable link 7")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN8,DBF_MENU) {
+		prompt("Enable link 8")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN9,DBF_MENU) {
+		prompt("Enable link 9")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(EN10,DBF_MENU) {
+		prompt("Enable link 10")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+
+
+
+	field(ACT1,DBF_MENU) {
+		prompt("Link alarm active 1")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT2,DBF_MENU) {
+		prompt("Link alarm active 2")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT3,DBF_MENU) {
+		prompt("Link alarm active 3")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT4,DBF_MENU) {
+		prompt("Link alarm active 4")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT5,DBF_MENU) {
+		prompt("Link alarm active 5")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT6,DBF_MENU) {
+		prompt("Link alarm active 6")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT7,DBF_MENU) {
+		prompt("Link alarm active 7")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT8,DBF_MENU) {
+		prompt("Link alarm active 8")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT9,DBF_MENU) {
+		prompt("Link alarm active 9")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+	field(ACT10,DBF_MENU) {
+		prompt("Link alarm active 10")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		initial("0")
+		menu(menuYesNo)
+	}
+
+
+
+	field(SEV1,DBF_MENU) {
+		prompt("Override severity 1")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV2,DBF_MENU) {
+		prompt("Override severity 2")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV3,DBF_MENU) {
+		prompt("Override severity 3")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV4,DBF_MENU) {
+		prompt("Override severity 4")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV5,DBF_MENU) {
+		prompt("Override severity 5")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV6,DBF_MENU) {
+		prompt("Override severity 6")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV7,DBF_MENU) {
+		prompt("Override severity 7")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV8,DBF_MENU) {
+		prompt("Override severity 8")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV9,DBF_MENU) {
+		prompt("Override severity 9")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(SEV10,DBF_MENU) {
+		prompt("Override severity 10")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+
+
+
+	field(MSV1,DBF_MENU) {
+		prompt("Minimum severity 1")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV2,DBF_MENU) {
+		prompt("Minimum severity 2")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV3,DBF_MENU) {
+		prompt("Minimum severity 3")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV4,DBF_MENU) {
+		prompt("Minimum severity 4")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV5,DBF_MENU) {
+		prompt("Minimum severity 5")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV6,DBF_MENU) {
+		prompt("Minimum severity 6")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV7,DBF_MENU) {
+		prompt("Minimum severity 7")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV8,DBF_MENU) {
+		prompt("Minimum severity 8")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV9,DBF_MENU) {
+		prompt("Minimum severity 9")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(MSV10,DBF_MENU) {
+		prompt("Minimum severity 10")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+
+
+
 	field(DLY1,DBF_DOUBLE) {
 		prompt("Active alarm delay 1")
 		pp(TRUE)
@@ -147,6 +472,37 @@ recordtype(alarm) {
 		prompt("Active alarm delay 3")
 		pp(TRUE)
 	}
+	field(DLY4,DBF_DOUBLE) {
+		prompt("Active alarm delay 4")
+		pp(TRUE)
+	}
+	field(DLY5,DBF_DOUBLE) {
+		prompt("Active alarm delay 5")
+		pp(TRUE)
+	}
+	field(DLY6,DBF_DOUBLE) {
+		prompt("Active alarm delay 6")
+		pp(TRUE)
+	}
+	field(DLY7,DBF_DOUBLE) {
+		prompt("Active alarm delay 7")
+		pp(TRUE)
+	}
+	field(DLY8,DBF_DOUBLE) {
+		prompt("Active alarm delay 8")
+		pp(TRUE)
+	}
+	field(DLY9,DBF_DOUBLE) {
+		prompt("Active alarm delay 9")
+		pp(TRUE)
+	}
+	field(DLY10,DBF_DOUBLE) {
+		prompt("Active alarm delay 10")
+		pp(TRUE)
+	}
+
+
+
 	field(DBI1,DBF_DOUBLE) {
 		prompt("Debounce interval 1")
 		initial("0.0")
@@ -162,22 +518,97 @@ recordtype(alarm) {
 		initial("0.0")
 		pp(TRUE)
 	}
+	field(DBI4,DBF_DOUBLE) {
+		prompt("Debounce interval 4")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI5,DBF_DOUBLE) {
+		prompt("Debounce interval 5")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI6,DBF_DOUBLE) {
+		prompt("Debounce interval 6")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI7,DBF_DOUBLE) {
+		prompt("Debounce interval 7")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI8,DBF_DOUBLE) {
+		prompt("Debounce interval 8")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI9,DBF_DOUBLE) {
+		prompt("Debounce interval 9")
+		initial("0.0")
+		pp(TRUE)
+	}
+	field(DBI10,DBF_DOUBLE) {
+		prompt("Debounce interval 10")
+		initial("0.0")
+		pp(TRUE)
+	}
+
+
+
 	field(DBC1,DBF_ULONG) {
 		prompt("Debounce count limit 1")
-		initial("1")
+		initial("0")
 		pp(TRUE)
 	}
 	field(DBC2,DBF_ULONG) {
 		prompt("Debounce count limit 2")
-		initial("1")
+		initial("0")
 		pp(TRUE)
 	}
 	field(DBC3,DBF_ULONG) {
 		prompt("Debounce count limit 3")
-		initial("1")
+		initial("0")
 		pp(TRUE)
 	}
+	field(DBC4,DBF_ULONG) {
+		prompt("Debounce count limit 4")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC5,DBF_ULONG) {
+		prompt("Debounce count limit 5")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC6,DBF_ULONG) {
+		prompt("Debounce count limit 6")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC7,DBF_ULONG) {
+		prompt("Debounce count limit 7")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC8,DBF_ULONG) {
+		prompt("Debounce count limit 8")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC9,DBF_ULONG) {
+		prompt("Debounce count limit 9")
+		initial("0")
+		pp(TRUE)
+	}
+	field(DBC10,DBF_ULONG) {
+		prompt("Debounce count limit 10")
+		initial("0")
+		pp(TRUE)
+	}
+
+
 	%/* Number of INPx fields defined */
-	%#define ALARM_NLINKS 3
-	%#define ALARM_STR_LEN 100
+	%#define ALARM_NLINKS 10
+	%#define ALARM_STR_LEN 40
 }
