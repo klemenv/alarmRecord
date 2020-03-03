@@ -1,6 +1,6 @@
 /*************************************************************************\
 * alarmRecord is distributed subject to a Software License Agreement found
-* in file LICENSE that is included with this distribution. 
+* in file LICENSE that is included with this distribution.
 \*************************************************************************/
 
 /* Record Support Routines for Calculation records */
@@ -9,6 +9,7 @@
  *      Date:   8-9-2019
  */
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -52,7 +53,7 @@ rset alarmRSET = {
     .init = NULL,
     .init_record = RECSUPFUN_CAST init_record,
     .process = RECSUPFUN_CAST process_record,
-    .special = NULL, 
+    .special = NULL,
     .get_value = NULL,
     .cvt_dbaddr = NULL,
     .get_array_info = NULL,
@@ -91,18 +92,17 @@ static long init_record(dbCommon *common, int pass)
     for (int i = 0; i < ALARM_NLINKS; i++) {
         auto inp = &rec->inp1 + i;
         auto dbc = &rec->dbc1 + i;
+        auto en  = &rec->en1  + i;
         char value[ALARM_STR_LEN];
 
         if (dbLinkIsConstant(inp)) {
+            *en = 0;
             continue;
         }
 
         recGblInitConstantLink(inp, DBF_STRING, value);
 
-        if (*dbc < 1) {
-            *dbc = 1;
-        }
-        rec->ctx->prevAlarms[i].resize(*dbc);
+        rec->ctx->prevAlarms[i].resize(std::max(1U, *dbc));
     }
     return 0;
 }
@@ -130,6 +130,7 @@ static long process_record(dbCommon *common)
         auto dly = &rec->dly1 + i;
         auto str = &rec->str1 + i;
         auto sev = &rec->sev1 + i;
+        auto act = &rec->act1 + i;
 
         if (dbLinkIsConstant(inp) || *en == menuYesNoNO || rec->en == menuYesNoNO) {
             prevAlarms.current().time = invalidTime;
@@ -138,7 +139,7 @@ static long process_record(dbCommon *common)
             continue;
         }
 
-        prevAlarms.resize(*dbc);
+        prevAlarms.resize(std::max(1U, *dbc));
 
         epicsEnum16 severity = epicsSevNone;
         epicsEnum16 status = epicsAlarmNone;
@@ -156,8 +157,10 @@ static long process_record(dbCommon *common)
                 rec->ctx->prevAlarms[i].advance();
                 rec->ctx->prevAlarms[i].current().time = invalidTime;
             }
+            *act = 0;
             continue;
         }
+        *act = 1;
 
         // The link is in alarm, check for how long or how many times
         bool triggered = false;
@@ -169,7 +172,7 @@ static long process_record(dbCommon *common)
             // Just record current severity, but don't count as a new occurance
             prevAlarms.current().severity = severity;
         }
-        
+
         if (*dbc < 1) {
             // link is in alarm && not using debounce => check delay
             double elapsed = (now - prevAlarms.current().time);
@@ -193,7 +196,7 @@ static long process_record(dbCommon *common)
                 if (!*str) {
                     recval = value;
                 } else if (strstr(*str, "%s") != NULL) {
-                    char v[ALARM_STR_LEN];
+                    char v[ALARM_STR_LEN+1];
                     snprintf(v, ALARM_STR_LEN, *str, value);
                     recval = v;
                 } else {
@@ -223,6 +226,7 @@ static long process_record(dbCommon *common)
     if (post) {
         recGblSetSevr(rec, recstat, recsevr);
         strncpy(rec->val, recval.c_str(), ALARM_STR_LEN);
+        rec->val[ALARM_STR_LEN-1] = 0;
 
         auto monitor_mask = recGblResetAlarms(rec);
         monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
