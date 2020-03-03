@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <display version="2.0.0">
   <name>Alarm config $(R)</name>
-  <macros>
-    <R>Alarm</R>
-  </macros>
-  <width>900</width>
+  <width>1050</width>
   <widget type="label" version="2.0.0">
     <name>Label_1</name>
     <text>Status:</text>
@@ -62,7 +59,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_5</name>
     <text>Text when in alarm</text>
-    <x>480</x>
+    <x>633</x>
     <y>130</y>
     <width>160</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -70,7 +67,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_6</name>
     <text>Override severity</text>
-    <x>780</x>
+    <x>933</x>
     <y>130</y>
     <width>120</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -78,7 +75,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_7</name>
     <text>Minimum severity</text>
-    <x>650</x>
+    <x>803</x>
     <y>130</y>
     <width>120</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -86,7 +83,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_8</name>
     <text>Enable</text>
-    <x>210</x>
+    <x>260</x>
     <y>130</y>
     <width>60</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -94,7 +91,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_9</name>
     <text>Delay</text>
-    <x>270</x>
+    <x>423</x>
     <y>130</y>
     <width>60</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -102,7 +99,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_10</name>
     <text>Debounce</text>
-    <x>340</x>
+    <x>493</x>
     <y>110</y>
     <width>130</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -110,7 +107,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_11</name>
     <text>count</text>
-    <x>340</x>
+    <x>493</x>
     <y>130</y>
     <width>60</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -118,7 +115,7 @@
   <widget type="label" version="2.0.0">
     <name>Label_12</name>
     <text>interval</text>
-    <x>410</x>
+    <x>563</x>
     <y>130</y>
     <width>60</width>
     <horizontal_alignment>1</horizontal_alignment>
@@ -130,50 +127,104 @@
     </macros>
     <x>10</x>
     <y>160</y>
-    <width>890</width>
+    <width>1040</width>
     <height>20</height>
     <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
     <widget type="textupdate" version="2.0.0">
       <name>Text Update_1</name>
       <pv_name>$(R).INP$(L)</pv_name>
-      <width>190</width>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="textentry" version="3.0.0">
-      <name>Text Entry</name>
-      <pv_name>$(R).STR$(L)</pv_name>
-      <x>470</x>
-      <width>160</width>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="combo" version="2.0.0">
-      <name>Combo Box</name>
-      <pv_name>$(R).SEV$(L)</pv_name>
-      <x>770</x>
-      <width>120</width>
-      <height>20</height>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="combo" version="2.0.0">
-      <name>Combo Box_1</name>
-      <pv_name>$(R).MSV$(L)</pv_name>
-      <x>640</x>
-      <width>120</width>
-      <height>20</height>
+      <width>250</width>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
     <widget type="checkbox" version="2.0.0">
       <name>Check Box_1</name>
       <pv_name>$(R).EN$(L)</pv_name>
       <label></label>
-      <x>220</x>
+      <x>266</x>
       <width>20</width>
       <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_1</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
     </widget>
     <widget type="textentry" version="3.0.0">
       <name>Text Entry_1</name>
       <pv_name>$(R).DLY$(L)</pv_name>
-      <x>260</x>
+      <x>410</x>
       <width>60</width>
       <rules>
         <rule name="Enabled" prop_id="enabled" out_exp="true">
@@ -188,14 +239,14 @@
     <widget type="textentry" version="3.0.0">
       <name>Text Entry_2</name>
       <pv_name>$(R).DBC$(L)</pv_name>
-      <x>330</x>
+      <x>480</x>
       <width>60</width>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
     <widget type="textentry" version="3.0.0">
       <name>Text Entry_3</name>
       <pv_name>$(R).DBI$(L)</pv_name>
-      <x>400</x>
+      <x>550</x>
       <width>60</width>
       <rules>
         <rule name="Enabled" prop_id="enabled" out_exp="true">
@@ -207,89 +258,37 @@
       </rules>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
-  </widget>
-  <widget type="group" version="2.0.0">
-    <name>Group_3</name>
-    <macros>
-      <L>2</L>
-    </macros>
-    <x>10</x>
-    <y>190</y>
-    <width>890</width>
-    <height>20</height>
-    <style>3</style>
     <widget type="textentry" version="3.0.0">
-      <name>Text Entry_12</name>
+      <name>Text Entry</name>
       <pv_name>$(R).STR$(L)</pv_name>
-      <x>470</x>
+      <x>620</x>
       <width>160</width>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
     <widget type="combo" version="2.0.0">
-      <name>Combo Box_6</name>
-      <pv_name>$(R).SEV$(L)</pv_name>
-      <x>770</x>
+      <name>Combo Box_1</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
       <width>120</width>
       <height>20</height>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
     <widget type="combo" version="2.0.0">
-      <name>Combo Box_7</name>
-      <pv_name>$(R).MSV$(L)</pv_name>
-      <x>640</x>
+      <name>Combo Box</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
       <width>120</width>
       <height>20</height>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
-    <widget type="checkbox" version="2.0.0">
-      <name>Check Box_4</name>
-      <pv_name>$(R).EN$(L)</pv_name>
-      <label></label>
-      <x>220</x>
-      <width>20</width>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="textentry" version="3.0.0">
-      <name>Text Entry_13</name>
-      <pv_name>$(R).DLY$(L)</pv_name>
-      <x>260</x>
-      <width>60</width>
-      <rules>
-        <rule name="Enabled" prop_id="enabled" out_exp="true">
-          <exp bool_exp="true">
-            <expression>pv0&lt;1</expression>
-          </exp>
-          <pv_name>$(R).DBC$(L)</pv_name>
-        </rule>
-      </rules>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="textentry" version="3.0.0">
-      <name>Text Entry_14</name>
-      <pv_name>$(R).DBC$(L)</pv_name>
-      <x>330</x>
-      <width>60</width>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="textentry" version="3.0.0">
-      <name>Text Entry_15</name>
-      <pv_name>$(R).DBI$(L)</pv_name>
-      <x>400</x>
-      <width>60</width>
-      <rules>
-        <rule name="Enabled" prop_id="enabled" out_exp="true">
-          <exp bool_exp="true">
-            <expression>pv0&gt;1</expression>
-          </exp>
-          <pv_name>$(R).DBC$(L)</pv_name>
-        </rule>
-      </rules>
-      <border_alarm_sensitive>false</border_alarm_sensitive>
-    </widget>
-    <widget type="textupdate" version="2.0.0">
-      <name>Text Update_4</name>
-      <pv_name>$(R).INP$(L)</pv_name>
-      <width>190</width>
+    <widget type="led" version="2.0.0">
+      <name>LED</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
       <border_alarm_sensitive>false</border_alarm_sensitive>
     </widget>
   </widget>
@@ -308,5 +307,1569 @@
     <y>60</y>
     <width>30</width>
     <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_14</name>
+    <text>Tree</text>
+    <x>366</x>
+    <y>130</y>
+    <width>57</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_15</name>
+    <text>Alarm</text>
+    <x>320</x>
+    <y>130</y>
+    <width>46</width>
+    <horizontal_alignment>1</horizontal_alignment>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_1</name>
+    <macros>
+      <L>2</L>
+    </macros>
+    <x>10</x>
+    <y>190</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_2</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_2</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_2</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_4</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_5</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_6</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_7</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_2</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_3</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_1</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_2</name>
+    <macros>
+      <L>3</L>
+    </macros>
+    <x>10</x>
+    <y>220</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_3</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_3</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_3</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_8</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_9</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_10</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_11</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_4</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_5</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_2</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_3</name>
+    <macros>
+      <L>4</L>
+    </macros>
+    <x>10</x>
+    <y>250</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_4</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_4</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_4</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_12</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_13</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_14</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_15</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_6</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_7</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_3</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_4</name>
+    <macros>
+      <L>5</L>
+    </macros>
+    <x>10</x>
+    <y>280</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_5</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_6</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_5</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_16</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_17</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_18</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_19</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_8</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_9</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_4</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_5</name>
+    <macros>
+      <L>6</L>
+    </macros>
+    <x>10</x>
+    <y>310</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_6</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_7</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_6</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_20</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_21</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_22</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_23</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_10</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_11</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_5</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_6</name>
+    <macros>
+      <L>7</L>
+    </macros>
+    <x>10</x>
+    <y>340</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_7</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_8</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_7</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_24</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_25</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_26</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_27</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_12</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_13</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_6</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_7</name>
+    <macros>
+      <L>8</L>
+    </macros>
+    <x>10</x>
+    <y>370</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_8</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_9</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_8</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_28</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_29</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_30</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_31</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_14</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_15</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_7</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_8</name>
+    <macros>
+      <L>9</L>
+    </macros>
+    <x>10</x>
+    <y>400</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_9</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_10</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_9</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_32</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_33</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_34</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_35</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_16</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_17</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_8</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+  </widget>
+  <widget type="group" version="2.0.0">
+    <name>Group_9</name>
+    <macros>
+      <L>10</L>
+    </macros>
+    <x>10</x>
+    <y>430</y>
+    <width>1040</width>
+    <height>20</height>
+    <style>3</style>
+    <rules>
+      <rule name="Visible" prop_id="visible" out_exp="false">
+        <exp bool_exp="pv0&lt;$(L)">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://n_links($(N=10))</pv_name>
+      </rule>
+    </rules>
+    <widget type="textupdate" version="2.0.0">
+      <name>Text Update_10</name>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <width>250</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="checkbox" version="2.0.0">
+      <name>Check Box_11</name>
+      <pv_name>$(R).EN$(L)</pv_name>
+      <label></label>
+      <x>266</x>
+      <width>20</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="action_button" version="3.0.0">
+      <name>Action Button_10</name>
+      <actions>
+        <action type="write_pv">
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+          <value>1</value>
+          <description>Open alarm screen for $(R).INP$(L)</description>
+        </action>
+      </actions>
+      <pv_name>$(R).INP$(L)</pv_name>
+      <text>...</text>
+      <x>367</x>
+      <width>36</width>
+      <height>20</height>
+      <scripts>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil, ValueUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+value = None
+pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+if pv_name != "":
+  pv  = PVFactory.getPV(pv_name + ".RTYP")
+  try:
+    value = pv.read()
+    start = time.time()
+    while value is None and (time.time() - start) < 1.0:
+      time.sleep(0.01)
+      value = pv.read()
+  finally:
+    PVFactory.releasePV(pv)
+
+is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+widget.setPropertyValue('visible', is_alarm_record)
+]]></text>
+          <pv_name>$(R).INP$(L)</pv_name>
+        </script>
+        <script file="EmbeddedPy">
+          <text><![CDATA[# Embedded python script
+from org.csstudio.display.builder.runtime.script import PVUtil, ScriptUtil
+from org.csstudio.display.builder.runtime.pv import PVFactory
+import time
+
+if PVUtil.getDouble(pvs[1]) > 0:
+  pv_name = PVUtil.getString(pvs[0]).split(" ")[0]
+  if pv_name != "":
+    pv  = PVFactory.getPV(pv_name + ".RTYP")
+    try:
+      value = pv.read()
+      start = time.time()
+      while value is None and (time.time() - start) < 1.0:
+        time.sleep(0.01)
+        value = pv.read()
+    finally:
+      PVFactory.releasePV(pv)
+
+    is_alarm_record = (value is not None and ValueUtil.getString(value) == "alarm")
+    if is_alarm_record:
+      macros = { "R": pv_name, "N": "10" }
+      ScriptUtil.openDisplay(widget, "alarmRecord.bob", "REPLACE", macros)
+]]></text>
+          <pv_name trigger="false">$(R).INP$(L)</pv_name>
+          <pv_name>loc://open_subalarm$(L)(0)</pv_name>
+        </script>
+      </scripts>
+      <tooltip>$(actions)</tooltip>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_36</name>
+      <pv_name>$(R).DLY$(L)</pv_name>
+      <x>410</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&lt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_37</name>
+      <pv_name>$(R).DBC$(L)</pv_name>
+      <x>480</x>
+      <width>60</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_38</name>
+      <pv_name>$(R).DBI$(L)</pv_name>
+      <x>550</x>
+      <width>60</width>
+      <rules>
+        <rule name="Enabled" prop_id="enabled" out_exp="true">
+          <exp bool_exp="true">
+            <expression>pv0&gt;1</expression>
+          </exp>
+          <pv_name>$(R).DBC$(L)</pv_name>
+        </rule>
+      </rules>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="textentry" version="3.0.0">
+      <name>Text Entry_39</name>
+      <pv_name>$(R).STR$(L)</pv_name>
+      <x>620</x>
+      <width>160</width>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_18</name>
+      <pv_name>$(R).MSV$(L)</pv_name>
+      <x>790</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="combo" version="2.0.0">
+      <name>Combo Box_19</name>
+      <pv_name>$(R).SEV$(L)</pv_name>
+      <x>920</x>
+      <width>120</width>
+      <height>20</height>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
+    <widget type="led" version="2.0.0">
+      <name>LED_9</name>
+      <pv_name>$(R).ACT$(L)</pv_name>
+      <x>320</x>
+      <on_color>
+        <color name="MAJOR" red="255" green="0" blue="0">
+        </color>
+      </on_color>
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+    </widget>
   </widget>
 </display>
