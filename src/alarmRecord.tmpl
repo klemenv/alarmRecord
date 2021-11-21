@@ -1,0 +1,39 @@
+recordtype(alarm) {
+	include "dbCommon.dbd"
+	field(CTX,DBF_NOACCESS) {
+		prompt("Record Private")
+		special(SPC_NOMOD)
+		interest(4)
+		extra("struct alarmRecordCtx *ctx")
+	}
+	field(EN,DBF_MENU) {
+		prompt("Alarms enable")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(LCH,DBF_MENU) {
+		prompt("Enable latching mode")
+		promptgroup(GUI_INPUTS)
+		pp(TRUE)
+		initial("1")
+		menu(menuYesNo)
+	}
+	field(CLR,DBF_UCHAR) {
+		prompt("Clear latched alarm")
+		initial("1")
+		pp(TRUE)
+	}
+	field(VAL,DBF_STRING) {
+		prompt("Current Value")
+		special(SPC_NOMOD)
+		asl(ASL0)
+		initial("OK")
+		size(40)
+	}
+
+	%#define ALARM_STR_LEN 40
+
+	$(FIELDS)
+}

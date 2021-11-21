@@ -33,6 +33,9 @@ recordtype(alarm) {
 		size(40)
 	}
 
+	%#define ALARM_STR_LEN 40
+
+	%#define ALARM_NLINKS 10
 	field(INP1,DBF_INLINK) {
 		prompt("Input 1")
 		promptgroup(GUI_CALC)
@@ -83,8 +86,6 @@ recordtype(alarm) {
 		promptgroup(GUI_CALC)
 		interest(1)
 	}
-
-
 	field(STR1,DBF_STRING) {
 		prompt("String 1")
 		promptgroup(GUI_OUTPUT)
@@ -165,9 +166,6 @@ recordtype(alarm) {
 		pp(TRUE)
 		size(40)
 	}
-
-
-
 	field(EN1,DBF_MENU) {
 		prompt("Enable link 1")
 		promptgroup(GUI_INPUTS)
@@ -238,9 +236,6 @@ recordtype(alarm) {
 		initial("1")
 		menu(menuYesNo)
 	}
-
-
-
 	field(ACT1,DBF_MENU) {
 		prompt("Link alarm active 1")
 		promptgroup(GUI_INPUTS)
@@ -311,9 +306,6 @@ recordtype(alarm) {
 		initial("0")
 		menu(menuYesNo)
 	}
-
-
-
 	field(SEV1,DBF_MENU) {
 		prompt("Override severity 1")
 		promptgroup(GUI_ALARMS)
@@ -384,9 +376,6 @@ recordtype(alarm) {
 		interest(1)
 		menu(menuAlarmSevr)
 	}
-
-
-
 	field(MSV1,DBF_MENU) {
 		prompt("Minimum severity 1")
 		promptgroup(GUI_ALARMS)
@@ -457,9 +446,6 @@ recordtype(alarm) {
 		interest(1)
 		menu(menuAlarmSevr)
 	}
-
-
-
 	field(DLY1,DBF_DOUBLE) {
 		prompt("Active alarm delay 1")
 		pp(TRUE)
@@ -500,9 +486,6 @@ recordtype(alarm) {
 		prompt("Active alarm delay 10")
 		pp(TRUE)
 	}
-
-
-
 	field(DBI1,DBF_DOUBLE) {
 		prompt("Debounce interval 1")
 		initial("0.0")
@@ -553,9 +536,6 @@ recordtype(alarm) {
 		initial("0.0")
 		pp(TRUE)
 	}
-
-
-
 	field(DBC1,DBF_ULONG) {
 		prompt("Debounce count limit 1")
 		initial("0")
@@ -606,9 +586,4 @@ recordtype(alarm) {
 		initial("0")
 		pp(TRUE)
 	}
-
-
-	%/* Number of INPx fields defined */
-	%#define ALARM_NLINKS 10
-	%#define ALARM_STR_LEN 40
 }
