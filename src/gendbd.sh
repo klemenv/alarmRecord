@@ -23,6 +23,6 @@ for f in O.Common/alarmRecordFieldBlock*; do
 done
 
 sed "/\$(FIELDS)/{
-	s/\$(FIELDS)/%#define ALARM_NLINKS $NLINKS/
+	s/\$(FIELDS)/%#define ALARMREC_NLINKS $NLINKS/
 	r O.Common/alarmRecordFields.dbd
 }" alarmRecord.tmpl > alarmRecord.dbd

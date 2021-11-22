@@ -1,3 +1,10 @@
+menu(alarmrecLINKTYPE) {
+        choice(alarmrecLINKTYPE_EXT_NC,"External PV Not Connected")
+        choice(alarmrecLINKTYPE_EXT,"External PV OK")
+        choice(alarmrecLINKTYPE_LOCAL,"Local PV")
+        choice(alarmrecLINKTYPE_CONST,"Constant/Disabled")
+}
+
 recordtype(alarm) {
 	include "dbCommon.dbd"
 	field(CTX,DBF_NOACCESS) {
@@ -33,7 +40,7 @@ recordtype(alarm) {
 		size(40)
 	}
 
-	%#define ALARM_STR_LEN 40
+	%#define ALARMREC_STR_LEN 40
 
 	$(FIELDS)
 }

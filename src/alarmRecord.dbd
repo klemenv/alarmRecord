@@ -1,3 +1,10 @@
+menu(alarmrecLINKTYPE) {
+        choice(alarmrecLINKTYPE_EXT_NC,"External PV Not Connected")
+        choice(alarmrecLINKTYPE_EXT,"External PV OK")
+        choice(alarmrecLINKTYPE_LOCAL,"Local PV")
+        choice(alarmrecLINKTYPE_CONST,"Constant/Disabled")
+}
+
 recordtype(alarm) {
 	include "dbCommon.dbd"
 	field(CTX,DBF_NOACCESS) {
@@ -33,9 +40,9 @@ recordtype(alarm) {
 		size(40)
 	}
 
-	%#define ALARM_STR_LEN 40
+	%#define ALARMREC_STR_LEN 40
 
-	%#define ALARM_NLINKS 10
+	%#define ALARMREC_NLINKS 10
 	field(INP1,DBF_INLINK) {
 		prompt("Input 1")
 		promptgroup(GUI_CALC)
@@ -85,6 +92,76 @@ recordtype(alarm) {
 		prompt("Input 10")
 		promptgroup(GUI_CALC)
 		interest(1)
+	}
+	field(TY1,DBF_MENU) {
+		prompt("Link 1 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY2,DBF_MENU) {
+		prompt("Link 2 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY3,DBF_MENU) {
+		prompt("Link 3 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY4,DBF_MENU) {
+		prompt("Link 4 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY5,DBF_MENU) {
+		prompt("Link 5 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY6,DBF_MENU) {
+		prompt("Link 6 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY7,DBF_MENU) {
+		prompt("Link 7 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY8,DBF_MENU) {
+		prompt("Link 8 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY9,DBF_MENU) {
+		prompt("Link 9 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
+	}
+	field(TY10,DBF_MENU) {
+		prompt("Link 10 type")
+		special(SPC_NOMOD)
+		interest(1)
+		menu(alarmrecLINKTYPE)
+		initial("1")
 	}
 	field(STR1,DBF_STRING) {
 		prompt("String 1")
