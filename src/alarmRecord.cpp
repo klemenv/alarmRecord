@@ -46,8 +46,9 @@
 #  define RECSUPFUN_CAST (RECSUPFUN)
 #endif
 
-static long init_record(dbCommon *, int);
-static long process_record(dbCommon *);
+static long initRecord(dbCommon *, int);
+static long processRecord(dbCommon *);
+static long updateRecordField(DBADDR *addr, int after);
 static void checkLinksCallback(epicsCallback *arg);
 static void checkLinks(alarmRecord *rec);
 
@@ -55,9 +56,9 @@ rset alarmRSET = {
     .number = RSETNUMBER,
     .report = NULL,
     .init = NULL,
-    .init_record = RECSUPFUN_CAST init_record,
-    .process = RECSUPFUN_CAST process_record,
-    .special = NULL,
+    .init_record = RECSUPFUN_CAST initRecord,
+    .process = RECSUPFUN_CAST processRecord,
+    .special = RECSUPFUN_CAST updateRecordField,
     .get_value = NULL,
     .cvt_dbaddr = NULL,
     .get_array_info = NULL,
@@ -89,7 +90,7 @@ struct alarmRecordCtx {
     epicsCallback checkLinkCb;
 };
 
-static long init_record(dbCommon *common, int pass)
+static long initRecord(dbCommon *common, int pass)
 {
     auto rec = reinterpret_cast<struct alarmRecord *>(common);
 
@@ -108,11 +109,6 @@ static long init_record(dbCommon *common, int pass)
         auto type = &rec->ty1 + i;
         char value[ALARMREC_STR_LEN];
 
-        if (dbLinkIsConstant(inp)) {
-            *en = 0;
-            continue;
-        }
-
         recGblInitConstantLink(inp, DBF_STRING, value);
 
         if (dbLinkIsConstant(inp)) {
@@ -128,7 +124,6 @@ static long init_record(dbCommon *common, int pass)
                 rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_NOT_OK;
             }
         } else {
-            /* PV must reside on this ioc */
             *type = alarmrecLINKTYPE_LOCAL;
 
             if (!dbIsLinkConnected(inp)) {
@@ -146,7 +141,7 @@ static long init_record(dbCommon *common, int pass)
     return 0;
 }
 
-static long process_record(dbCommon *common)
+static long processRecord(dbCommon *common)
 {
     auto rec = reinterpret_cast<struct alarmRecord *>(common);
     static epicsTime invalidTime = epicsTimeStamp({ .secPastEpoch = 0, .nsec = 0 });
@@ -182,6 +177,7 @@ static long process_record(dbCommon *common)
             continue;
         }
 
+        // TODO: this should be move to special()
         prevAlarms.resize(std::max(1U, *dbc));
 
         epicsEnum16 severity = epicsSevNone;
@@ -191,6 +187,7 @@ static long process_record(dbCommon *common)
         if (dbGetAlarm(inp, &status, &severity) != 0 || dbGetLink(inp, DBR_STRING, value, 0, 0) != 0) {
             status = epicsAlarmLink;
             severity = epicsSevInvalid;
+            // TODO: How can user customize this message?
             snprintf(value, ALARMREC_STR_LEN, "link %d disconnected", i);
         }
 
@@ -280,6 +277,51 @@ static long process_record(dbCommon *common)
     rec->pact = FALSE;
 
     return 0;
+}
+
+static long updateRecordField(DBADDR *addr, int after)
+{
+    if (after == 0) {
+        return 0;
+    }
+
+    auto field = dbGetFieldIndex(addr);
+    auto rec = reinterpret_cast<alarmRecord*>(addr->precord);
+
+    if (field >= alarmRecordINP1 && (field < alarmRecordINP1+ALARMREC_NLINKS)) {
+        auto i = field - alarmRecordINP1;
+        auto link = &rec->inp1 + i;
+        auto value = &rec->str1 + i;
+        auto type = &rec->ty1 + i;
+
+        recGblInitConstantLink(link, DBF_DOUBLE, value);
+
+        if (dbLinkIsConstant(link)) {
+            db_post_events(rec, value, DBE_VALUE);
+            *type = alarmrecLINKTYPE_CONST;
+        } else if (dbLinkIsVolatile(link)) {
+            if (dbIsLinkConnected(link)) {
+                *type = alarmrecLINKTYPE_EXT;
+            } else {
+                *type = alarmrecLINKTYPE_EXT_NC;
+                if (!rec->ctx->cbScheduled) {
+                    callbackRequestDelayed(&rec->ctx->checkLinkCb, .5);
+                    rec->ctx->cbScheduled = true;
+                    rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_NOT_OK;
+                }
+            }
+        } else {
+            *type = alarmrecLINKTYPE_LOCAL;
+
+            if (!dbIsLinkConnected(link)) {
+                errlogPrintf("calcout: %s.INP%c in no-vo diso state\n", rec->name, i);
+            }
+        }
+        db_post_events(rec, type, DBE_VALUE);
+        return 0;
+    } else {
+        return S_db_badChoice;
+    }
 }
 
 static void checkLinksCallback(epicsCallback *arg)

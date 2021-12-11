@@ -30,5 +30,6 @@ record(alarm, "Alarm") {
     field(INP2, "Input2 CP")
     field(DBI2, "60")
     field(DBC2, "3")
-    field(SCAN, ".5 second")
+    field(INP3, "ExternalPV CP")
+    field(TPRO, "1")
 }

@@ -1,4 +1,4 @@
-#!../../bin/linux-x86_64-debug/test
+#!../../bin/linux-x86_64/test
 
 < envPaths
 
