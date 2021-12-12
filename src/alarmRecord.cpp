@@ -15,6 +15,7 @@
 #include <string>
 
 #include "alarm.h"
+#include "alarmString.h"
 #include "callback.h"
 #include "cantProceed.h"
 #include "dbAccess.h"
@@ -90,6 +91,24 @@ struct alarmRecordCtx {
     epicsCallback checkLinkCb;
 };
 
+static std::string replaceSubstring(const std::string& text, const std::string& pattern, const std::string& replacement, bool all=false)
+{
+    std::string out;
+    size_t last = 0;
+    size_t pos = text.find(pattern);
+    while (pos != text.npos) {
+        out += text.substr(last, pos-last);
+        out += replacement;
+        last = pos + pattern.length();
+        if (!all) {
+            break;
+        }
+        pos = text.find(pattern, last);
+    }
+    out += text.substr(last);
+    return out;
+}
+
 static long initRecord(dbCommon *common, int pass)
 {
     auto rec = reinterpret_cast<struct alarmRecord *>(common);
@@ -105,7 +124,6 @@ static long initRecord(dbCommon *common, int pass)
     for (int i = 0; i < ALARMREC_NLINKS; i++) {
         auto inp = &rec->inp1 + i;
         auto dbc = &rec->dbc1 + i;
-        auto en  = &rec->en1  + i;
         auto type = &rec->ty1 + i;
         char value[ALARMREC_STR_LEN];
 
@@ -131,7 +149,7 @@ static long initRecord(dbCommon *common, int pass)
             }
         }
 
-        rec->ctx->prevAlarms[i].resize(std::max(1U, *dbc));
+        rec->ctx->prevAlarms[i].resize(*dbc < 1 ? 1 : *dbc);
     }
 
     callbackSetCallback(checkLinksCallback, &rec->ctx->checkLinkCb);
@@ -163,114 +181,92 @@ static long processRecord(dbCommon *common)
         auto inp = &rec->inp1 + i;
         auto en  = &rec->en1  + i;
         auto msv = &rec->msv1 + i;
+        auto osv = &rec->osv1 + i;
         auto dbi = &rec->dbi1 + i;
         auto dbc = &rec->dbc1 + i;
-        auto dly = &rec->dly1 + i;
         auto str = &rec->str1 + i;
         auto sev = &rec->sev1 + i;
         auto act = &rec->act1 + i;
-
-        if (dbLinkIsConstant(inp) || *en == menuYesNoNO || rec->en == menuYesNoNO) {
-            prevAlarms.current().time = invalidTime;
-            prevAlarms.previous().time = invalidTime;
-            prevAlarms.last().time = invalidTime;
-            continue;
-        }
-
-        // TODO: this should be move to special()
-        prevAlarms.resize(std::max(1U, *dbc));
-
         epicsEnum16 severity = epicsSevNone;
         epicsEnum16 status = epicsAlarmNone;
         char value[ALARMREC_STR_LEN];
 
+        if (dbLinkIsConstant(inp)) {
+            continue;
+        }
+
+        prevAlarms.resize(*dbc < 1 ? 1 : *dbc);
+
         if (dbGetAlarm(inp, &status, &severity) != 0 || dbGetLink(inp, DBR_STRING, value, 0, 0) != 0) {
             status = epicsAlarmLink;
             severity = epicsSevInvalid;
-            // TODO: How can user customize this message?
-            snprintf(value, ALARMREC_STR_LEN, "link %d disconnected", i);
+        } else if (severity < (*msv+1)) {
+            severity = epicsSevNone;
+            status = epicsAlarmNone;
         }
 
-        if (severity < *msv || severity == 0) {
-            // not triggered
-            if (rec->ctx->prevAlarms[i].current().time != invalidTime) {
-                rec->ctx->prevAlarms[i].advance();
-                rec->ctx->prevAlarms[i].current().time = invalidTime;
-            }
-            *act = 0;
-            continue;
-        }
-        *act = 1;
+        if (severity >= (*msv+1)) {
+            bool alarmed = (*dbc <= 1);
+            if (*dbc > 1 && *sev < (*msv+1)) {
+                prevAlarms.advance();
+                prevAlarms.current().time = now;
+                prevAlarms.current().severity = severity;
 
-        // The link is in alarm, check for how long or how many times
-        bool triggered = false;
-        if (prevAlarms.current().time == invalidTime) {
-            // Newly triggered alarm
-            prevAlarms.current().time = now;
-            prevAlarms.current().severity = severity;
-        } else if (severity > prevAlarms.current().severity) {
-            // Just record current severity, but don't count as a new occurance
-            prevAlarms.current().severity = severity;
-        }
-
-        if (*dbc < 1) {
-            // link is in alarm && not using debounce => check delay
-            double elapsed = (now - prevAlarms.current().time);
-            triggered = (elapsed >= *dly);
-        } else {
-            double elapsed = (prevAlarms.current().time - prevAlarms.last().time);
-            triggered = (elapsed <= *dbi);
-        }
-
-        if (triggered) {
-            if (*sev != epicsSevNone) {
-                severity = *sev;
+                if (prevAlarms.last().time != invalidTime) {
+                    double elapsed = (prevAlarms.current().time - prevAlarms.last().time);
+                    if (elapsed <= *dbi) {
+                        alarmed = true;
+                    }
+                }
             }
 
-            if (severity > recsevr) {
-                recsevr = severity;
+            if (alarmed && recsevr == epicsSevNone && *en == menuYesNoYES) {
+                recsevr = (*osv != epicsSevNone ? *osv : severity);
                 recstat = status;
-
-                // Use STR from the record if available,
-                // otherwise use link's value directly
                 if (!*str) {
                     recval = value;
-                } else if (strstr(*str, "%s") != NULL) {
-                    char v[ALARMREC_STR_LEN+1];
-                    snprintf(v, ALARMREC_STR_LEN, *str, value);
-                    recval = v;
                 } else {
                     recval = *str;
+                    recval = replaceSubstring(recval, "%VAL%", value);
+                    recval = replaceSubstring(recval, "%SEVR%", epicsAlarmSeverityStrings[severity]);
+                    recval = replaceSubstring(recval, "%STAT%", epicsAlarmConditionStrings[status]);
                 }
             }
         }
+
+        if (severity != *sev) {
+            if (severity < (*msv+1)) {
+                *act = epicsSevNone;
+            } else if (*osv != epicsSevNone) {
+                *act = *osv;
+            } else {
+                *act = severity;
+            }
+            db_post_events(rec, act, DBE_VALUE);
+        }
+
+        *sev = severity;
     }
 
-    bool post = false;
-    if (rec->lch == 0) {
+    bool skip_post = false;
+    if (rec->en == 0) {
+        recsevr = epicsSevNone;
+        recstat = epicsAlarmNone;
+        recval = "disabled";
+    } else if (rec->lch == 1 && rec->sevr != epicsSevNone && rec->stat != epicsAlarmUDF) {
+        skip_post = true;
+    }
+
+    if (!skip_post) {
         if (rec->sevr != recsevr || rec->stat != recstat || rec->val != recval) {
-            post = true;
-        }
-    } else {
-        if (rec->clr != 0) {
-            post = true;
-            rec->clr = 0;
-        }
-        if (rec->sevr != epicsSevNone) {
-            // don't post if already alarming
-        } else if (rec->sevr != recsevr || rec->stat != recstat || rec->val != recval) {
-            post = true;
-        }
-    }
+            recGblSetSevr(rec, recstat, recsevr);
+            strncpy(rec->val, recval.c_str(), ALARMREC_STR_LEN);
+            rec->val[ALARMREC_STR_LEN-1] = 0;
 
-    if (post) {
-        recGblSetSevr(rec, recstat, recsevr);
-        strncpy(rec->val, recval.c_str(), ALARMREC_STR_LEN);
-        rec->val[ALARMREC_STR_LEN-1] = 0;
-
-        auto monitor_mask = recGblResetAlarms(rec);
-        monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
-        db_post_events(rec, &rec->val, monitor_mask);
+            auto monitor_mask = recGblResetAlarms(rec);
+            monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
+            db_post_events(rec, &rec->val, monitor_mask);
+        }
     }
 
     recGblFwdLink(rec);
@@ -288,7 +284,25 @@ static long updateRecordField(DBADDR *addr, int after)
     auto field = dbGetFieldIndex(addr);
     auto rec = reinterpret_cast<alarmRecord*>(addr->precord);
 
-    if (field >= alarmRecordINP1 && (field < alarmRecordINP1+ALARMREC_NLINKS)) {
+    if (field == alarmRecordEN) {
+        if (rec->en == 1) {
+            strncpy(rec->val, rec->ctx->noAlarmStr.c_str(), ALARMREC_STR_LEN);
+            recGblSetSevr(rec, epicsAlarmNone, epicsSevNone);
+            auto monitor_mask = recGblResetAlarms(rec);
+            monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
+            db_post_events(rec, &rec->val, monitor_mask);
+        }
+        return 0;
+    } else if (field == alarmRecordCLR) {
+        if (rec->clr == 1) {
+            strncpy(rec->val, rec->ctx->noAlarmStr.c_str(), ALARMREC_STR_LEN);
+            recGblSetSevr(rec, epicsAlarmNone, epicsSevNone);
+            auto monitor_mask = recGblResetAlarms(rec);
+            monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
+            db_post_events(rec, &rec->val, monitor_mask);
+        }
+        return 0;
+    } else if (field >= alarmRecordINP1 && field < (alarmRecordINP1+ALARMREC_NLINKS)) {
         auto i = field - alarmRecordINP1;
         auto link = &rec->inp1 + i;
         auto value = &rec->str1 + i;
@@ -314,11 +328,15 @@ static long updateRecordField(DBADDR *addr, int after)
             *type = alarmrecLINKTYPE_LOCAL;
 
             if (!dbIsLinkConnected(link)) {
-                errlogPrintf("calcout: %s.INP%c in no-vo diso state\n", rec->name, i);
+                errlogPrintf("alarmRecord: %s.INP%c in no-vo diso state\n", rec->name, i);
             }
         }
         db_post_events(rec, type, DBE_VALUE);
         return 0;
+    } else if (field >= alarmRecordDBC1 && field < (alarmRecordDBC1+ALARMREC_NLINKS)) {
+        auto i = field - alarmRecordDBC1;
+        auto value = &rec->dbc1 + i;
+        return (*value < 1 ? S_db_badField : 0);
     } else {
         return S_db_badChoice;
     }
