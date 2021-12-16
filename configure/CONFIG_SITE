@@ -18,3 +18,9 @@ CROSS_COMPILER_TARGET_ARCHS =
 # Extensions don't normally build shared libraries 
 SHARED_LIBRARIES = NO
 
+# Number of links in alarmRecord
+ALARMREC_NLINKS = 10
+
+# Handling of .bob files
+FILE_TYPE += BOB
+INSTALL_BOB = $(INSTALL_LOCATION)/opi
