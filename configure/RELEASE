@@ -13,11 +13,7 @@
 
 # Define INSTALL_LOCATION in CONFIG_SITE
 
-EPICS_EXTENSIONS = $(TOP)
-
 # Locations of external modules
-
-# OAG_APPS may be needed by the SDDS extension
-#OAG_APPS = $(TOP)/../../oag/apps
-
 EPICS_BASE = /ics/epics/7.0.6.1/base
+
+-include $(TOP)/configure/RELEASE.local

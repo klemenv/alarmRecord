@@ -19,7 +19,7 @@ CROSS_COMPILER_TARGET_ARCHS =
 SHARED_LIBRARIES = NO
 
 # Number of links in alarmRecord
-ALARMREC_NLINKS = 10
+ALARMREC_NLINKS = 25
 
 # Handling of .bob files
 FILE_TYPE += BOB

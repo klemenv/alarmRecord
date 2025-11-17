@@ -14,7 +14,7 @@ orig_height=`grep -m1 "<height>" alarmRecordLink.tmp | sed 's/.*>\(.*\)<.*/\1/'`
 # Expand the group as many time as there are links
 rm -f alarmRecordLinks.tmp
 for i in `seq $NLINKS`; do
-	let y=orig_y+i*orig_height+i*5
+	let "y=orig_y+(i-1)*orig_height+(i-1)*5"
 	sed -e "s/\$(L)/$i/g" -e "0,/<y>$orig_y/s/<y>$orig_y/<y>$y/" alarmRecordLink.tmp >> alarmRecordLinks.tmp
 done
 

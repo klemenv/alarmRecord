@@ -1,11 +1,16 @@
 # EPICS alarmRecord
 
-The Alarm record is used to provide contextual text description of the most significant alarm from up to 10 other linked records. The alarm mechanism is similar to other standard records with multiple inputs, except that it silently enforces Channel Access status and severity for all linked records. Whenever the record processes, it scans all linked records for alarms. Alarmed link with highest 
-severity drives the severity of the Alarm record. Minimum and override severity fields allow to fine
-tune the alarming mechanism of the links. Debouncing mechanism and minimum time in alarm provide
-way to filter out noise or intermittent alarms. Each link could be individually enabled or disabled.
-Finally, the global settings allow for Alarm record to latch status until clear or disable the 
-record completely.
+The Alarm record is used to provide contextual text description of the most
+significant alarm from up to 25 other linked records. The alarm mechanism is
+similar to other standard records with multiple inputs, except that it allows
+remote links to go invalid and still not necessarily trigger the alarm. Whenever
+the record processes, it scans all linked records for alarms. Alarmed link with
+highest severity drives the severity of the Alarm record. Minimum and override
+severity fields allow to fine tune the alarming mechanism of the links.
+Debouncing mechanism and minimum time in alarm provide way to filter out noise
+or intermittent alarms. Each link could be individually enabled or disabled.
+Finally, the global settings allow for Alarm record to latch status until
+cleared manually or disable the record completely.
 
 
 ![Example CS-Studio screen](img/example.png "Example CS-Studio screen")
@@ -30,20 +35,25 @@ number of fields that control how each link affects the record.
 
 ENx is a menuYesNo switch which enables or disables checking this link. Default is 0.
 
-INPx specifies linked record.
+INPx specifies linked record. All link modifiers are supported, like CP, NMS etc.
 
-STRx specifies custom text to be displayed when this link is driving the record's alarm. %s modifier
-is replaced with remote record value, numerical values are automatically converted to string. Default
-is %s.
+STRx specifies custom text to be displayed when this link is driving the
+record's alarm. Certain modifiers are replaced at runtime with corresponding
+link fields. Modifiers supported: %VAL%, %EGU%
 
-SEVx allows to override the remote record's severity. Value of 0 means use remote record's severity.
+OSVx allows to override the remote record's severity. Value of 0 means use
+remote record's severity.
 
 MSVx specifies the minimum severity of the remote record in order to trigger.
+Value of 0 is not valid but is kept for compliancy with other SEVR records.
 
-DLYx allows to configure minimum time in seconds before this link triggers the record alarm. This
-confiuration is mutually exclusive with debounce mechanism (DLCx=0).
-
-DLCx stands for debounc minimum count and when non-zero it specifies how many times the connected
-record must enter the alarm during interval specifies in DLIx.
+DLCx stands for debounce minimum count and when >1 it specifies how many times
+the connected record must enter the alarm during interval specified in DLIx.
 
 DLIx is debounce interval in seconds.
+
+DLYx allows to configure minimum time in seconds before this link triggers the
+record alarm. This confiuration is only valid when DLCx=1.
+
+ACTx specifies the status of currently activated link alarm, after debouncing
+and delay conditions have been met.

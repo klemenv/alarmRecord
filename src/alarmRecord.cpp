@@ -10,6 +10,7 @@
  */
 
 #include <algorithm>
+#include <list>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -33,8 +34,6 @@
 #undef  GEN_SIZE_OFFSET
 #include "epicsExport.h"
 
-#include "CircularList.h"
-
 #ifdef VERSION_INT
 #  if EPICS_VERSION_INT < VERSION_INT(3,16,0,2)
 #    define dbLinkIsConstant(lnk) ((lnk)->type == CONSTANT)
@@ -48,10 +47,10 @@
 #endif
 
 static long initRecord(dbCommon *, int);
+static void lateInitCallback(epicsCallback *arg);
 static long processRecord(dbCommon *);
 static long updateRecordField(DBADDR *addr, int after);
-static void checkLinksCallback(epicsCallback *arg);
-static void checkLinks(alarmRecord *rec);
+static void checkDelaysCallback(epicsCallback *arg);
 
 rset alarmRSET = {
     .number = RSETNUMBER,
@@ -77,18 +76,15 @@ epicsExportAddress(rset, alarmRSET);
 
 struct alarmRecordCtx {
     std::string noAlarmStr;
+    bool initialized = false;
+    epicsCallback lateInitCb;
+    epicsCallback checkDelaysCb;
+
     struct AlarmEvent {
         epicsEnum16 severity = epicsSevNone;
         epicsTime time = epicsTimeStamp({ .secPastEpoch = 0, .nsec = 0 });
     };
-    CircularList<AlarmEvent> prevAlarms[ALARMREC_NLINKS];
-    enum {
-        NO_CA_LINKS,
-        CA_LINKS_ALL_OK,
-        CA_LINKS_NOT_OK,
-    } caLinkStat{NO_CA_LINKS};
-    bool cbScheduled{false};
-    epicsCallback checkLinkCb;
+    std::list<AlarmEvent> prevAlarms[ALARMREC_NLINKS];
 };
 
 static std::string replaceSubstring(const std::string& text, const std::string& pattern, const std::string& replacement, bool all=false)
@@ -120,160 +116,196 @@ static long initRecord(dbCommon *common, int pass)
     }
 
     rec->ctx->noAlarmStr = rec->val;
-    rec->ctx->caLinkStat = alarmRecordCtx::NO_CA_LINKS;
+    bool haveDelays = false;
     for (int i = 0; i < ALARMREC_NLINKS; i++) {
         auto inp = &rec->inp1 + i;
         auto dbc = &rec->dbc1 + i;
-        auto type = &rec->ty1 + i;
+        auto dly = &rec->dly1 + i;
         char value[ALARMREC_STR_LEN];
 
         recGblInitConstantLink(inp, DBF_STRING, value);
 
-        if (dbLinkIsConstant(inp)) {
-            *type = alarmrecLINKTYPE_CONST;
-        } else if (dbLinkIsVolatile(inp)) {
-            if (dbIsLinkConnected(inp)) {
-                *type = alarmrecLINKTYPE_EXT;
-                if (rec->ctx->caLinkStat == alarmRecordCtx::NO_CA_LINKS) {
-                    rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_ALL_OK;
-                }
-            } else {
-                *type = alarmrecLINKTYPE_EXT_NC;
-                rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_NOT_OK;
-            }
-        } else {
-            *type = alarmrecLINKTYPE_LOCAL;
-
-            if (!dbIsLinkConnected(inp)) {
-                errlogPrintf("alarmRecord: %s.INP%c in no-vo disco state\n", rec->name, i+'A');
-            }
+        if (*dbc <= 1 && *dly > 0) {
+            haveDelays = true;
         }
-
-        rec->ctx->prevAlarms[i].resize(*dbc < 1 ? 1 : *dbc);
     }
 
-    callbackSetCallback(checkLinksCallback, &rec->ctx->checkLinkCb);
-    callbackSetPriority(0, &rec->ctx->checkLinkCb);
-    callbackSetUser(rec, &rec->ctx->checkLinkCb);
+    callbackSetCallback(lateInitCallback, &rec->ctx->lateInitCb);
+    callbackSetPriority(0, &rec->ctx->lateInitCb);
+    callbackSetUser(rec, &rec->ctx->lateInitCb);
+    callbackRequestDelayed(&rec->ctx->lateInitCb, 1.0);
+
+    callbackSetCallback(checkDelaysCallback, &rec->ctx->checkDelaysCb);
+    callbackSetPriority(0, &rec->ctx->checkDelaysCb);
+    callbackSetUser(rec, &rec->ctx->checkDelaysCb);
+    if (haveDelays) {
+        // Schedule processing of the record regardless of PINI and CP links
+        callbackRequestDelayed(&rec->ctx->checkDelaysCb, 1.0);
+    }
 
     return 0;
+}
+
+static void lateInitCallback(epicsCallback *arg)
+{
+    void *r;
+    callbackGetUser(r, arg);
+    auto rec = reinterpret_cast<alarmRecord*>(r);
+    // We don't let record process until CA links are settled. This is needed
+    // because we don't always turn disconnected links into alarmed state.
+    // So when the record processes initially, the CA links are likely not
+    // connected yet and they could trigger unintentional alarm.
+    rec->ctx->initialized = true;
 }
 
 static long processRecord(dbCommon *common)
 {
     auto rec = reinterpret_cast<struct alarmRecord *>(common);
-    static epicsTime invalidTime = epicsTimeStamp({ .secPastEpoch = 0, .nsec = 0 });
-    epicsTime now = epicsTime::getCurrent();
-
-    epicsEnum16 recsevr = epicsSevNone;
-    epicsEnum16 recstat = epicsAlarmNone;
-    std::string recval = rec->ctx->noAlarmStr;
+    bool haveDelays = false;
+    epicsEnum16 recsevr = (rec->lch > 0 ? rec->sevr : epicsSevNone);
+    epicsEnum16 recstat = (rec->lch > 0 ? rec->stat : epicsAlarmNone);
+    std::string recval  = (rec->lch > 0 ? rec->val  : rec->ctx->noAlarmStr);
 
     rec->pact = TRUE;
     recGblGetTimeStamp(rec);
 
-    if (rec->ctx->caLinkStat != alarmRecordCtx::NO_CA_LINKS) {
-        checkLinks(rec);
-    }
+    if (rec->ctx->initialized && rec->en == menuYesNoYES) {
 
-    for(int i = 0; i < ALARMREC_NLINKS; i++) {
-        auto& prevAlarms = rec->ctx->prevAlarms[i];
-        auto inp = &rec->inp1 + i;
-        auto en  = &rec->en1  + i;
-        auto msv = &rec->msv1 + i;
-        auto osv = &rec->osv1 + i;
-        auto dbi = &rec->dbi1 + i;
-        auto dbc = &rec->dbc1 + i;
-        auto str = &rec->str1 + i;
-        auto sev = &rec->sev1 + i;
-        auto act = &rec->act1 + i;
-        epicsEnum16 severity = epicsSevNone;
-        epicsEnum16 status = epicsAlarmNone;
-        char value[ALARMREC_STR_LEN];
+        for(int i = 0; i < ALARMREC_NLINKS; i++) {
+            auto& prevAlarms = rec->ctx->prevAlarms[i];
+            auto inp = &rec->inp1 + i;
+            auto en  = &rec->en1  + i;
+            auto msv = &rec->msv1 + i;
+            auto osv = &rec->osv1 + i;
+            auto dbi = &rec->dbi1 + i;
+            auto dbc = &rec->dbc1 + i;
+            auto dly = &rec->dly1 + i;
+            auto str = &rec->str1 + i;
+            auto sev = &rec->sev1 + i;
+            auto act = &rec->act1 + i;
+            epicsEnum16 severity = epicsSevNone;
+            epicsEnum16 status = epicsAlarmNone;
+            char value[128];
+            char egu[32];
 
-        if (dbLinkIsConstant(inp)) {
-            continue;
-        }
+            if (dbLinkIsConstant(inp)) {
+                continue;
+            }
 
-        prevAlarms.resize(*dbc < 1 ? 1 : *dbc);
+            if (*dbc <= 1 && *dly > 0) {
+                haveDelays = true;
+            }
 
-        if (dbGetAlarm(inp, &status, &severity) != 0 || dbGetLink(inp, DBR_STRING, value, 0, 0) != 0) {
-            status = epicsAlarmLink;
-            severity = epicsSevInvalid;
-        } else if (severity < (*msv+1)) {
-            severity = epicsSevNone;
-            status = epicsAlarmNone;
-        }
+            if (dbGetAlarm(inp, &status, &severity) != 0 || dbGetLink(inp, DBR_STRING, value, 0, 0) != 0 || dbGetUnits(inp, egu, sizeof(egu)) != 0) {
+                status = epicsAlarmLink;
+                severity = epicsSevInvalid;
+            } else if (severity < *msv) {
+                severity = epicsSevNone;
+                status = epicsAlarmNone;
+            }
 
-        if (severity >= (*msv+1)) {
-            bool alarmed = (*dbc <= 1);
-            if (*dbc > 1 && *sev < (*msv+1)) {
-                prevAlarms.advance();
-                prevAlarms.current().time = now;
-                prevAlarms.current().severity = severity;
+            bool alarmed = false;
+            if (*en == menuYesNoYES && severity >= *msv) {
+                // We support two modes:
+                // * debounce mode, must be triggered DBCx>1 times in DBIx seconds
+                // * latch mode, must stay active for certain DLYx seconds
 
-                if (prevAlarms.last().time != invalidTime) {
-                    double elapsed = (prevAlarms.current().time - prevAlarms.last().time);
-                    if (elapsed <= *dbi) {
-                        alarmed = true;
+                if (*dbc > 1) { // debounce mode
+                    if (*sev == epicsSevNone) {
+                        // alarm triggered, now check how many times
+                        prevAlarms.push_back({severity, epicsTime::getCurrent()});
+                        while (prevAlarms.size() > static_cast<size_t>(*dbc)) {
+                            prevAlarms.pop_front();
+                        }
+                        double elapsed = (prevAlarms.back().time - prevAlarms.front().time);
+                        if (prevAlarms.size() == static_cast<size_t>(*dbc) && (elapsed <= *dbi || *dbc == 1)) {
+                            alarmed = true;
+                        }
+                    }
+                } else { // latch mode
+                    if (*sev == epicsSevNone) {
+                        prevAlarms.clear();
+                        prevAlarms.push_back({severity, epicsTime::getCurrent()});
+                    } else if (prevAlarms.empty() == false) {
+                        double elapsed = (epicsTime::getCurrent() - prevAlarms.front().time);
+                        if (elapsed >= *dly) {
+                            alarmed = true;
+                        }
                     }
                 }
             }
 
-            if (alarmed && recsevr == epicsSevNone && *en == menuYesNoYES) {
-                recsevr = (*osv != epicsSevNone ? *osv : severity);
-                recstat = status;
-                if (!*str) {
-                    recval = value;
-                } else {
-                    recval = *str;
-                    recval = replaceSubstring(recval, "%VAL%", value);
-                    recval = replaceSubstring(recval, "%SEVR%", epicsAlarmSeverityStrings[severity]);
-                    recval = replaceSubstring(recval, "%STAT%", epicsAlarmConditionStrings[status]);
+            if (alarmed == true) {
+                if (severity != epicsSevNone && *osv != epicsSevNone) {
+                    severity = *osv;
+                }
+
+                if (severity > recsevr) {
+                    std::string text = *str;
+                    text = replaceSubstring(text, "%VAL%", value, true);
+                    text = replaceSubstring(text, "%EGU%", egu, true);
+                    recval = text;
+                    recsevr = severity;
+                    recstat = status;
+                }
+                if (*act != severity) {
+                    *act = severity;
+                    db_post_events(rec, act, DBE_VALUE);
+                }
+            } else {
+                if (*act != epicsSevNone) {
+                    *act = epicsSevNone;
+                    db_post_events(rec, act, DBE_VALUE);
                 }
             }
-        }
 
-        if (severity != *sev) {
-            if (severity < (*msv+1)) {
-                *act = epicsSevNone;
-            } else if (*osv != epicsSevNone) {
-                *act = *osv;
-            } else {
-                *act = severity;
-            }
-            db_post_events(rec, act, DBE_VALUE);
+            *sev = severity;
         }
+    } // rec->en == menuYesNoYES
 
-        *sev = severity;
+    if (rec->stat == epicsAlarmUDF) {
+        recsevr = epicsSevNone;
+        recstat = epicsAlarmNone;
+        recval = "OK";
     }
 
-    bool skip_post = false;
-    if (rec->en == 0) {
+    if (rec->en == menuYesNoNO) {
         recsevr = epicsSevNone;
         recstat = epicsAlarmNone;
         recval = "disabled";
-    } else if (rec->lch == 1 && rec->sevr != epicsSevNone && rec->stat != epicsAlarmUDF) {
-        skip_post = true;
     }
 
-    if (!skip_post) {
-        if (rec->sevr != recsevr || rec->stat != recstat || rec->val != recval) {
-            recGblSetSevr(rec, recstat, recsevr);
-            strncpy(rec->val, recval.c_str(), ALARMREC_STR_LEN);
-            rec->val[ALARMREC_STR_LEN-1] = 0;
+    if (recval != rec->val || recsevr != rec->sevr) {
+        recGblSetSevr(rec, recstat, recsevr);
+        strncpy(rec->val, recval.c_str(), ALARMREC_STR_LEN);
+        rec->val[ALARMREC_STR_LEN-1] = 0;
 
-            auto monitor_mask = recGblResetAlarms(rec);
-            monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
-            db_post_events(rec, &rec->val, monitor_mask);
-        }
+        auto monitor_mask = recGblResetAlarms(rec);
+        monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
+        db_post_events(rec, &rec->val, monitor_mask);
     }
 
     recGblFwdLink(rec);
     rec->pact = FALSE;
 
+    if (haveDelays) {
+        callbackRequestDelayed(&rec->ctx->checkDelaysCb, 1.0);
+    }
+
     return 0;
 }
+
+static void checkDelaysCallback(epicsCallback *arg)
+{
+    void *r;
+    callbackGetUser(r, arg);
+    auto rec = reinterpret_cast<alarmRecord*>(r);
+
+    dbScanLock(reinterpret_cast<dbCommon*>(rec));
+    processRecord(reinterpret_cast<dbCommon*>(rec));
+    dbScanUnlock(reinterpret_cast<dbCommon*>(rec));
+}
+
 
 static long updateRecordField(DBADDR *addr, int after)
 {
@@ -297,41 +329,11 @@ static long updateRecordField(DBADDR *addr, int after)
         if (rec->clr == 1) {
             strncpy(rec->val, rec->ctx->noAlarmStr.c_str(), ALARMREC_STR_LEN);
             recGblSetSevr(rec, epicsAlarmNone, epicsSevNone);
+            rec->clr = 0;
             auto monitor_mask = recGblResetAlarms(rec);
             monitor_mask |= DBE_VALUE | DBE_LOG | DBE_ALARM;
             db_post_events(rec, &rec->val, monitor_mask);
         }
-        return 0;
-    } else if (field >= alarmRecordINP1 && field < (alarmRecordINP1+ALARMREC_NLINKS)) {
-        auto i = field - alarmRecordINP1;
-        auto link = &rec->inp1 + i;
-        auto value = &rec->str1 + i;
-        auto type = &rec->ty1 + i;
-
-        recGblInitConstantLink(link, DBF_DOUBLE, value);
-
-        if (dbLinkIsConstant(link)) {
-            db_post_events(rec, value, DBE_VALUE);
-            *type = alarmrecLINKTYPE_CONST;
-        } else if (dbLinkIsVolatile(link)) {
-            if (dbIsLinkConnected(link)) {
-                *type = alarmrecLINKTYPE_EXT;
-            } else {
-                *type = alarmrecLINKTYPE_EXT_NC;
-                if (!rec->ctx->cbScheduled) {
-                    callbackRequestDelayed(&rec->ctx->checkLinkCb, .5);
-                    rec->ctx->cbScheduled = true;
-                    rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_NOT_OK;
-                }
-            }
-        } else {
-            *type = alarmrecLINKTYPE_LOCAL;
-
-            if (!dbIsLinkConnected(link)) {
-                errlogPrintf("alarmRecord: %s.INP%c in no-vo diso state\n", rec->name, i);
-            }
-        }
-        db_post_events(rec, type, DBE_VALUE);
         return 0;
     } else if (field >= alarmRecordDBC1 && field < (alarmRecordDBC1+ALARMREC_NLINKS)) {
         auto i = field - alarmRecordDBC1;
@@ -339,55 +341,5 @@ static long updateRecordField(DBADDR *addr, int after)
         return (*value < 1 ? S_db_badField : 0);
     } else {
         return S_db_badChoice;
-    }
-}
-
-static void checkLinksCallback(epicsCallback *arg)
-{
-    void *r;
-    callbackGetUser(r, arg);
-    auto rec = reinterpret_cast<alarmRecord*>(r);
-
-    dbScanLock(reinterpret_cast<dbCommon*>(rec));
-    rec->ctx->cbScheduled = false;
-    checkLinks(rec);
-    dbScanUnlock(reinterpret_cast<dbCommon*>(rec));
-}
-
-static void checkLinks(alarmRecord *rec)
-{
-    if (rec->tpro == 1) {
-        printf("alarmRecord(%s):checkLinks()\n", rec->name);
-    }
-
-    rec->ctx->caLinkStat = alarmRecordCtx::NO_CA_LINKS;
-    for (size_t i = 0; i<ALARMREC_NLINKS; i++) {
-        auto link = &rec->inp1 + i;
-        auto type = &rec->ty1 + i;
-        auto linkEn = &rec->en1  + i;
-
-        if (*linkEn == menuYesNoYES && dbLinkIsVolatile(link)) {
-            if (rec->ctx->caLinkStat == alarmRecordCtx::NO_CA_LINKS) {
-                rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_ALL_OK;
-            }
-
-            auto stat = dbIsLinkConnected(link);
-            if (stat == 0) {
-                rec->ctx->caLinkStat = alarmRecordCtx::CA_LINKS_NOT_OK;
-                if (*type != alarmrecLINKTYPE_EXT_NC) {
-                    db_post_events(rec, type, DBE_VALUE);
-                    *type = alarmrecLINKTYPE_EXT_NC;
-                }
-            } else if (*type == alarmrecLINKTYPE_EXT_NC) {
-                *type = alarmrecLINKTYPE_EXT;
-                db_post_events(rec, type, DBE_VALUE);
-            }
-        }
-    }
-
-    if (rec->ctx->caLinkStat == alarmRecordCtx::CA_LINKS_NOT_OK && !rec->ctx->cbScheduled) {
-        /* Schedule another epicsCallback */
-        rec->ctx->cbScheduled = true;
-        callbackRequestDelayed(&rec->ctx->checkLinkCb, .5);
     }
 }

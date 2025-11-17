@@ -1,35 +1,46 @@
-record(longin, "Input1") {
-    field(LOLO, "-5")
-    field(LOW,  "-1")
-    field(HIGH, "10")
-    field(HIHI, "15")
+record(ai, "Temperature") {
+    field(LOLO, "-10")
+    field(LOW,  "0")
+    field(HIGH, "30")
+    field(HIHI, "35")
     field(HSV,  "MINOR")
     field(HHSV, "MAJOR")
     field(LSV,  "MINOR")
     field(LLSV, "MAJOR")
     field(VAL,  "9")
+    field(EGU,  "Celsius")
     field(PINI, "YES")
 }
-record(longin, "Input2") {
-    field(LOLO, "-5")
-    field(LOW,  "-1")
-    field(HIGH, "10")
-    field(HIHI, "15")
+record(ai, "Pressure") {
+    field(LOLO, "980")
+    field(LOW,  "990")
+    field(HIGH, "1025")
+    field(HIHI, "1035")
     field(HSV,  "MINOR")
     field(HHSV, "MAJOR")
     field(LSV,  "MINOR")
     field(LLSV, "MAJOR")
-    field(VAL,  "2")
+    field(VAL,  "1013")
+    field(EGU,  "millibar")
     field(PINI, "YES")
 }
 record(alarm, "Alarm") {
-    field(INP1, "Input1 CP")
-    field(STR1, "Input 1 in alarm")
-    field(SEV1, "MAJOR")
-    field(DLY1, "5.0")
-    field(INP2, "Input2 CP")
+
+    field(INP1, "Temperature CP")
+    field(EN1,  "YES")
+    field(STR1, "Temperature alarm: %VAL%%EGU%")
+    field(MSV1, "MAJOR")
+    field(DLY1, "5")
+#    field(DBC1, "2")
+#    field(DBI1, "10")
+
+    field(INP2, "Pressure CP")
+    field(EN2,  "YES")
+    field(STR2, "Air pressure alarm")
+    field(MSV2, "MINOR")
     field(DBI2, "60")
     field(DBC2, "3")
-    field(INP3, "ExternalPV CP")
+
     field(TPRO, "1")
+    field(PINI, "YES")
 }

@@ -6,7 +6,7 @@
 # is not meant to be run with every built. Instead, the generated
 # alarmRecord.dbd file is considered static and is checked into repository.
 
-NLINKS=${1:-10}
+NLINKS=${1:-25}
 
 rm -f O.Common/alarmRecordFieldBlock* O.Common/alarmRecordFields.dbd
 
@@ -16,17 +16,6 @@ menu(alarmrecLINKTYPE) {
 	choice(alarmrecLINKTYPE_EXT,"External PV OK")
 	choice(alarmrecLINKTYPE_LOCAL,"Local PV")
 	choice(alarmrecLINKTYPE_CONST,"Constant/Disabled")
-}
-menu(alarmrecMINSEVR) {
-	choice(alarmrecMINSEVR_MINOR,"MINOR")
-	choice(alarmrecMINSEVR_MAJOR,"MAJOR")
-	choice(alarmrecMINSEVR_INVALID,"INVALID")
-}
-menu(alarmrecOVERRIDESEVR) {
-	choice(alarmrecOVERRIDESEVR_NOCHANGE,"NO_CHANGE")
-	choice(alarmrecOVERRIDESEVR_MINOR,"MINOR")
-	choice(alarmrecOVERRIDESEVR_MAJOR,"MAJOR")
-	choice(alarmrecOVERRIDESEVR_INVALID,"INVALID")
 }
 
 recordtype(alarm) {
@@ -108,7 +97,6 @@ for i in `seq $NLINKS`; do
 		prompt("Enable link $i")
 		promptgroup(GUI_INPUTS)
 		pp(TRUE)
-		initial("1")
 		menu(menuYesNo)
 	}
 EOF
@@ -120,7 +108,7 @@ for i in `seq $NLINKS`; do
 		promptgroup(GUI_INPUTS)
 		special(SPC_NOMOD)
 		initial("0")
-		menu(menuYesNo)
+		menu(menuAlarmSevr)
 	}
 EOF
 done
@@ -128,7 +116,7 @@ for i in `seq $NLINKS`; do
 	cat << EOF
 	field(OSV$i,DBF_MENU) {
 		prompt("Override severity $i")
-		menu(alarmrecOVERRIDESEVR)
+		menu(menuAlarmSevr)
 	}
 EOF
 done
@@ -139,7 +127,7 @@ for i in `seq $NLINKS`; do
 		promptgroup(GUI_ALARMS)
 		pp(TRUE)
 		interest(1)
-		menu(alarmrecMINSEVR)
+		menu(menuAlarmSevr)
 	}
 EOF
 done
@@ -158,6 +146,15 @@ for i in `seq $NLINKS`; do
 		prompt("Debounce count limit $i")
 		special(SPC_MOD)
 		initial("1")
+		pp(TRUE)
+	}
+EOF
+done
+for i in `seq $NLINKS`; do
+	cat << EOF
+	field(DLY$i,DBF_LONG) {
+		prompt("Delay interval $i")
+		initial("0")
 		pp(TRUE)
 	}
 EOF
